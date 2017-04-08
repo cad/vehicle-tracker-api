@@ -1,3 +1,25 @@
+// Package endpoints Vehicle Tracker API
+//
+// Vehicle Tracker API provides necessary methods and means to
+// track ground and water vehicles positions.
+//
+//   Title: Vehicle Tracker API
+//   Schemes: http, https
+//   Host: localhost
+//   BasePath: /
+//   Version: 0.0.1
+//   License: MIT http://opensource.org/licenses/MIT
+//   Contact: Mustafa Arici<mustafa.arici@neu.edu.tr>
+//   Terms of Service: http://tracker.neu.edu.tr/
+//
+//   Consumes:
+//   - application/json
+//
+//   Produces:
+//   - application/json
+//
+//
+// swagger:meta
 package endpoints
 
 import (

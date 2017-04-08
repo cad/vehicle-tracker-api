@@ -10,27 +10,43 @@ import (
 )
 
 
-type VehicleCreationStruct struct {
+// CoordinatePair represents a location on earth
+//
+// swagger:model
+type CoordinatePair struct {
 
-	PlateID string `json:"plate_id" valid:"required"`
-
-}
-
-type VehicleSyncStruct struct {
-
+	// Latitude
+	//
+	// required: true
 	Lat float64 `json:"lat"`
-	Lon float64 `json:"lon"`
 
+	// Longtitude
+	//
+	// required: true
+	Lon float64 `json:"lon"`
 }
 
 
+// swagger:parameters GetVehicle
+type GetVehicleParams struct {
+
+	// PlateID is a unique identifier across the vehicles
+	// in: path
+	// required: true
+	PlateID string `json:"plate_id"`
+
+}
+
+// swagger:route GET /vehicles/{plate_id} vehicles GetVehicle
+// Fetches the particular vehicle details from database.
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: Vehicle
 func GetVehicle(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
-	plateID := params["plateID"]
+	params := GetVehicleParams{PlateID: mux.Vars(req)["plate_id"]}
 
-	//id, _ := strconv.Atoi(p)
-
-	vehicle, err := repository.GetVehicleByPlateID(plateID)
+	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
 	if vehicle == (repository.Vehicle{}) {
 		sendErrorMessage(w, "Not found", 404)
 		return
@@ -43,6 +59,13 @@ func GetVehicle(w http.ResponseWriter, req *http.Request) {
 }
 
 
+// swagger:route GET /vehicles vehicles GetAllVehicles
+// This will show all vehicles by default.
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: Vehicles
 func GetAllVehicles(w http.ResponseWriter, req *http.Request) {
 	var vehicles []repository.Vehicle
 	vehicles = repository.GetAllVehicles()
@@ -55,51 +78,84 @@ func GetAllVehicles(w http.ResponseWriter, req *http.Request) {
 }
 
 
+// swagger:parameters CreateNewVehicle
+type CreateNewVehicleParams struct {
+
+	// Ident represents the identity definition of the  Vehicle
+	// in: body
+	// required: true
+	Ident struct {
+
+		// PlateID
+		//
+		// required: true
+		PlateID string `json:"plate_id" valid:"required"`
+
+	}
+
+}
+
 func CreateNewVehicle(w http.ResponseWriter, req *http.Request) {
-	var vehicleStruct VehicleCreationStruct
+	var params CreateNewVehicleParams
 
 	decoder := json.NewDecoder(req.Body)
 
-	if err := decoder.Decode(&vehicleStruct); err != nil {
+	if err := decoder.Decode(&params); err != nil {
 		sendErrorMessage(w, "Error decoding the input", http.StatusBadRequest)
 		return
 	}
-	_, err := valid.ValidateStruct(vehicleStruct)
+	_, err := valid.ValidateStruct(params)
 	if err != nil {
 		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	repository.CreateVehicle(vehicleStruct.PlateID)
+	repository.CreateVehicle(params.Ident.PlateID)
 	sendContentType(w, "application/json")
 }
 
 
+// swagger:parameters SyncVehicle
+type SyncVehicleParams struct {
+
+	// PlateID is an unique identifier across vehicles
+	// in: path
+	// required: true
+	PlateID string `json:"plate_id" validate:"required"`
+
+	// Location represents the x,y location of the Vehicle
+	// in: body
+	// required: true
+	Location CoordinatePair `json:"location" validate:"required"`
+
+}
+
 func SyncVehicle(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
-	plateID := params["plateID"]
-
-	//id, _ := strconv.Atoi(p)
-
-	var vehicleSyncStruct VehicleSyncStruct
-
+	params := SyncVehicleParams{PlateID: mux.Vars(req)["plate_id"]}
 	decoder := json.NewDecoder(req.Body)
 
-	if err := decoder.Decode(&vehicleSyncStruct); err != nil {
+	if err := decoder.Decode(&params.Location); err != nil {
 		sendErrorMessage(w, "Error decoding the input", http.StatusBadRequest)
 		return
 	}
-	repository.SyncVehicleByPlateID(plateID, vehicleSyncStruct.Lat, vehicleSyncStruct.Lon)
+	repository.SyncVehicleByPlateID(params.PlateID, params.Location.Lat, params.Location.Lon)
 	sendContentType(w, "application/json")
 }
 
 
+// swagger:parameters DeleteVehicle
+type DeleteVehicleParams struct {
+
+	// PlateID is an unique identifier across vehicles
+	// in: path
+	// required: true
+	PlateID string `json:"plate_id" validate:"required"`
+
+}
 
 func DeleteVehicle(w http.ResponseWriter, req *http.Request) {
-	params := mux.Vars(req)
+	params := DeleteVehicleParams{PlateID: mux.Vars(req)["PlateID"]}
 
-	plateID, _ := params["plateID"]
-
-	error := repository.DeleteVehicleByPlateID(plateID)
+	error := repository.DeleteVehicleByPlateID(params.PlateID)
 
 	if error!=nil {
 		sendErrorMessage(w, "There is no vehicle with that ID", http.StatusNotFound)

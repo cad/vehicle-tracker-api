@@ -1,0 +1,99 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Vehicle Tracker API provides necessary methods and means to\ntrack ground and water vehicles positions.\n\nTitle: Vehicle Tracker API",
+    "title": "Vehicle Tracker API",
+    "contact": {
+      "name": "Mustafa Arici",
+      "email": "mustafa.arici@neu.edu.tr"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    },
+    "version": "0.0.1"
+  },
+  "host": "localhost",
+  "basePath": "/",
+  "paths": {
+    "/vehicles": {
+      "get": {
+        "tags": [
+          "vehicles"
+        ],
+        "summary": "This will show all vehicles by default.",
+        "operationId": "GetAllVehicles",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Vehicles"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
+    "/vehicles/{plate_id}": {
+      "get": {
+        "tags": [
+          "vehicles"
+        ],
+        "summary": "Fetches the particular vehicle details from database.",
+        "operationId": "GetVehicle",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "PlateID",
+            "description": "PlateID is a unique identifier across the vehicles",
+            "name": "plate_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Vehicle"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CoordinatePair": {
+      "description": "CoordinatePair represents a location on earth",
+      "type": "object",
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "properties": {
+        "lat": {
+          "description": "Latitude",
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Lat"
+        },
+        "lon": {
+          "description": "Longtitude",
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Lon"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
+    }
+  }
+}

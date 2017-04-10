@@ -9,6 +9,16 @@ import (
 	"log"
 )
 
+// VehicleResponse
+// swagger:response
+type VehicleResponse struct {
+	// Vehicle
+	// in: body
+	Body struct {
+		Vehicle repository.Vehicle `json:"vehicle,required"`
+	}
+}
+
 
 // CoordinatePair represents a location on earth
 //
@@ -37,12 +47,12 @@ type GetVehicleParams struct {
 
 }
 
-// swagger:route GET /vehicles/{plate_id} vehicles GetVehicle
-// Fetches the particular vehicle details from database.
+// swagger:route GET /vehicles/{plate_id} Vehicles GetVehicle
+// Get a vehicle from database.
 //
 //   Responses:
 //     default: ErrorMsg
-//     200: Vehicle
+//     200: VehicleResponse
 func GetVehicle(w http.ResponseWriter, req *http.Request) {
 	params := GetVehicleParams{PlateID: mux.Vars(req)["plate_id"]}
 
@@ -59,13 +69,13 @@ func GetVehicle(w http.ResponseWriter, req *http.Request) {
 }
 
 
-// swagger:route GET /vehicles vehicles GetAllVehicles
-// This will show all vehicles by default.
+// swagger:route GET /vehicles/ Vehicles GetAllVehicles
+// Get all vehicles in the database.
 //
 //
 //   Responses:
 //     default: ErrorMsg
-//     200: Vehicles
+//     200: VehiclesResponse
 func GetAllVehicles(w http.ResponseWriter, req *http.Request) {
 	var vehicles []repository.Vehicle
 	vehicles = repository.GetAllVehicles()
@@ -95,6 +105,13 @@ type CreateNewVehicleParams struct {
 
 }
 
+// swagger:route POST /vehicles/ Vehicles CreateNewVehicle
+// Create a new vehicle record.
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleResponse
 func CreateNewVehicle(w http.ResponseWriter, req *http.Request) {
 	var params CreateNewVehicleParams
 
@@ -129,6 +146,13 @@ type SyncVehicleParams struct {
 
 }
 
+// swagger:route POST /vehicles/{plate_id}/sync Vehicles SyncVehicle
+// Set position.
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleResponse
 func SyncVehicle(w http.ResponseWriter, req *http.Request) {
 	params := SyncVehicleParams{PlateID: mux.Vars(req)["plate_id"]}
 	decoder := json.NewDecoder(req.Body)
@@ -152,6 +176,13 @@ type DeleteVehicleParams struct {
 
 }
 
+// swagger:route DELETE /vehicles/{plate_id} Vehicles DeleteVehicle
+// Delete a vehicle.
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleResponse
 func DeleteVehicle(w http.ResponseWriter, req *http.Request) {
 	params := DeleteVehicleParams{PlateID: mux.Vars(req)["PlateID"]}
 

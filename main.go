@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"flag"
+	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 )
 
 func main() {
@@ -47,7 +48,7 @@ func GetServer() http.Handler {
 	router.HandleFunc("/vehicles/{plate_id}/sync", endpoints.SyncVehicle).Methods("POST")
 
 	router.HandleFunc("/spec", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "swagger.json")
+		http.ServeFile(w, r, "data/swagger.json")
 	})
 
 	router.HandleFunc("/docs/", func(w http.ResponseWriter, r *http.Request) {
@@ -67,6 +68,8 @@ func executeServer() {
 		os.Exit(1)
 	}
 
+	specFile := generate.NewSpecFile("github.com/cad/vehicle-tracker-api", "data/swagger.json")
+	specFile.Execute([]string{})
 	repository.ConnectDB("sqlite3", "data/devel.db")
 
 	router := GetServer()

@@ -9,7 +9,6 @@ import (
 
 )
 
-
 type Vehicle struct {
 	ID        uint `json:"-" gorm:"primary_key"`
 	CreatedAt time.Time `json:"-"`

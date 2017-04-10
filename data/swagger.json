@@ -1,0 +1,226 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Vehicle Tracker API provides necessary methods and means to\ntrack ground and water vehicles positions.",
+    "title": "Vehicle Tracker API",
+    "termsOfService": "http://api.vehicles.neu.edu.tr/",
+    "version": "0.0.1"
+  },
+  "host": "localhost",
+  "basePath": "/",
+  "paths": {
+    "/vehicles/": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Get all vehicles in the database.",
+        "operationId": "GetAllVehicles",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehiclesResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Create a new vehicle record.",
+        "operationId": "CreateNewVehicle",
+        "parameters": [
+          {
+            "description": "Ident represents the identity definition of the  Vehicle",
+            "name": "Ident",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "plate_id"
+              ],
+              "properties": {
+                "plate_id": {
+                  "description": "PlateID",
+                  "type": "string",
+                  "x-go-name": "PlateID"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
+    "/vehicles/{plate_id}": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Get a vehicle from database.",
+        "operationId": "GetVehicle",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "PlateID",
+            "description": "PlateID is a unique identifier across the vehicles",
+            "name": "plate_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Delete a vehicle.",
+        "operationId": "DeleteVehicle",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "PlateID",
+            "description": "PlateID is an unique identifier across vehicles",
+            "name": "plate_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
+    "/vehicles/{plate_id}/sync": {
+      "post": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Set position.",
+        "operationId": "SyncVehicle",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "PlateID",
+            "description": "PlateID is an unique identifier across vehicles",
+            "name": "plate_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "x-go-name": "Location",
+            "description": "Location represents the x,y location of the Vehicle",
+            "name": "location",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CoordinatePair"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CoordinatePair": {
+      "description": "CoordinatePair represents a location on earth",
+      "type": "object",
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "properties": {
+        "lat": {
+          "description": "Latitude",
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Lat"
+        },
+        "lon": {
+          "description": "Longtitude",
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Lon"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
+    },
+    "Vehicle": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Lat"
+        },
+        "lon": {
+          "type": "number",
+          "format": "double",
+          "x-go-name": "Lon"
+        },
+        "plate_id": {
+          "type": "string",
+          "x-go-name": "PlateID"
+        },
+        "updated_at": {
+          "x-go-name": "UpdatedAt"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/repository"
+    }
+  },
+  "responses": {
+    "VehicleResponse": {
+      "description": "VehicleResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "vehicle": {
+            "$ref": "#/definitions/Vehicle"
+          }
+        }
+      }
+    }
+  }
+}

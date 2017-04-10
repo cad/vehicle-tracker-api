@@ -5,10 +5,11 @@
 //
 //
 // Terms Of Service:
-// http://api.vehicles.neu.edu.tr/
+// https://api.vehicles.neu.edu.tr/
+//
 //
 //   Schemes: http, https
-//   Host: localhost
+//   Host: https://api.vehicles.neu.edu.tr
 //   BasePath: /
 //   Version: 0.0.1
 //

@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"os"
 	"flag"
-	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
+	//"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 )
 
 func main() {
@@ -68,14 +68,14 @@ func executeServer() {
 		os.Exit(1)
 	}
 
-	specFile := generate.NewSpecFile("github.com/cad/vehicle-tracker-api", "data/swagger.json")
-	specFile.Execute([]string{})
+	//specFile := generate.NewSpecFile("github.com/cad/vehicle-tracker-api", "data/swagger.json")
+	//specFile.Execute([]string{})
 	repository.ConnectDB("sqlite3", "data/devel.db")
 
 	router := GetServer()
 	router = handlers.LoggingHandler(os.Stdout, router)
-	fmt.Println("API server is listening on port :5000")
-	log.Fatal(http.ListenAndServe(":5000", router))
+	fmt.Println("API server is listening on port :5004")
+	log.Fatal(http.ListenAndServe(":5004", router))
 
 	defer repository.CloseDB()
 }

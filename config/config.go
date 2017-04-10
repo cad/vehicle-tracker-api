@@ -6,22 +6,24 @@ import (
 	"fmt"
 )
 
+const VERSION = "0.0.1"
+
 type Configuration struct {
 	DB DBParams `json:"db`
+	Server ServerParams `json:"server"`
 }
 
 type DBParams struct {
-
 	Type string `json:"type"`
-	Host string `json:"host"`
-	Port string `json:"port"`
-	User string `json:"user"`
-	Name string `json:"name"`
-	Pass string `json:"pass"`
-
+	URL  string `json:"url"`
 }
 
-var Config Configuration
+type ServerParams struct {
+	Port string `json:"port"`
+	Host string `json:"host"`
+}
+
+var C Configuration
 
 
 func LoadConfigFile(filePath string) (err error) {
@@ -29,21 +31,10 @@ func LoadConfigFile(filePath string) (err error) {
 	if file, err = os.Open(filePath); err != nil {
 		return err
 	}
-	if err = json.NewDecoder(file).Decode(&Config); err != nil {
-		fmt.Println(Config.DB.Type)
+	if err = json.NewDecoder(file).Decode(&C); err != nil {
+		fmt.Println(C.DB.Type)
 		return err
 	}
 	return nil
-
-}
-
-func (db *DBParams) ConnectionString() (string, error) {
-	if db.Type == "postgres" {
-		return fmt.Sprintf("dbname=%s user=%s password=%s host=%s port=%s sslmode=disable", db.Name, db.User, db.Pass, db.Host, db.Port), nil
-	} else if db.Type == "mysql" {
-		return fmt.Sprintf("%s:%s@/%s", db.User, db.Pass, db.Name), nil
-	} else {
-		return "", fmt.Errorf("Unknown database type")
-	}
 
 }

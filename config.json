@@ -1,10 +1,10 @@
 {
     "db": {
-        "type": "mysql",
-        "host": "localhost",
-        "port": "3306",
-        "user": "root",
-        "name": "VehicleTrackerDB",
-        "pass": "1234"
+        "type": "sqlite3",
+        "url": "data/devel.db"
+    },
+    "server": {
+        "port": ":5004",
+        "host": "api.vehicles.neu.edu.tr"
     }
 }

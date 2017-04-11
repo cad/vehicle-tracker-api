@@ -1,4 +1,4 @@
-//go:generate swagger generate spec
+//go:generate swagger generate spec -o data/swagger.json
 package main
 
 import (

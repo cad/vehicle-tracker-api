@@ -19,6 +19,59 @@
   "host": "api.vehicles.neu.edu.tr",
   "basePath": "/",
   "paths": {
+    "/agents/": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "List all the agents.",
+        "operationId": "GetAllAgents",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AgentSuccessAgentsResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
+    "/agents/{uuid}/sync": {
+      "post": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Send GPS data from agent.",
+        "operationId": "SyncAgent",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "UUID",
+            "description": "UUID is an unique identifier across agents",
+            "name": "uuid",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Data represents the x,y location of the agent at ts time.",
+            "name": "Data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GPSData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AgentEmptyResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
     "/vehicles/": {
       "get": {
         "tags": [
@@ -163,6 +216,35 @@
     }
   },
   "definitions": {
+    "Agent": {
+      "type": "object",
+      "properties": {
+        "gps_ts": {
+          "type": "string",
+          "x-go-name": "TS"
+        },
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        },
+        "lat": {
+          "type": "string",
+          "x-go-name": "Lat"
+        },
+        "lon": {
+          "type": "string",
+          "x-go-name": "Lon"
+        },
+        "updated_at": {
+          "x-go-name": "UpdatedAt"
+        },
+        "uuid": {
+          "type": "string",
+          "x-go-name": "UUID"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/repository"
+    },
     "CoordinatePair": {
       "description": "CoordinatePair represents a location on earth",
       "type": "object",
@@ -182,6 +264,24 @@
           "type": "number",
           "format": "double",
           "x-go-name": "Lon"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
+    },
+    "GPSData": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "string",
+          "x-go-name": "Lat"
+        },
+        "lon": {
+          "type": "string",
+          "x-go-name": "Lon"
+        },
+        "ts": {
+          "type": "string",
+          "x-go-name": "TS"
         }
       },
       "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
@@ -225,6 +325,24 @@
     }
   },
   "responses": {
+    "AgentSuccessAgentResponse": {
+      "description": "Returns an agent",
+      "schema": {
+        "$ref": "#/definitions/Agent"
+      }
+    },
+    "AgentSuccessAgentsResponse": {
+      "description": "Returns list of agents",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Agent"
+        }
+      }
+    },
+    "AgentSuccessEmptyResponse": {
+      "description": "Returns empty object"
+    },
     "ErrorMsg": {
       "description": "Generic Error",
       "schema": {

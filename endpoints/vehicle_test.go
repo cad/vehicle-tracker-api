@@ -12,12 +12,6 @@ import (
 )
 
 
-func errorMsg(what, shouldBe, was string) string {
-	//debug.PrintStack()
-	return fmt.Sprintf("expected %s \"%s\" but got \"%s\"", what, shouldBe, was)
-}
-
-
 func TestGetAllVehiclesEndpoint(t *testing.T) {
 	// Init
 	repository.ConnectDB("sqlite3", "/tmp/test.db")
@@ -110,49 +104,6 @@ func TestGetVehicleEndpoint(t *testing.T) {
 		return
 	}
 
-}
-
-
-func TestSyncVehicleEndpoint(t *testing.T) {
-	// Init
-	repository.ConnectDB("sqlite3", "/tmp/test.db")
-	defer repository.CloseDB()
-	defer os.Remove("/tmp/test.db")
-
-	// Prepare
-	repository.CreateVehicle("test")
-
-	// Execute
-	params := CoordinatePair{Lat: 40.0, Lon: 40.0}
-	params_json, err := json.Marshal(&params)
-	if err != nil {
-		t.Error(errorMsg("VehicleStruct", "Marshallable", "UnMarshallable"))
-	}
-	body := bytes.NewBuffer(params_json)
-	req, _ := http.NewRequest("POST", "/vehicles/test/sync", body)
-	res := httptest.NewRecorder()
-	GetRouter().ServeHTTP(res, req)
-
-	// Test
-	if res.Code != 200 {
-		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
-		return
-	}
-
-	vehicle, err := repository.GetVehicleByPlateID("test")
-	if err != nil {
-		t.Error(errorMsg("Vehicle", "ToBeFound", "NotFound"))
-		return
-	}
-
-	if vehicle.Lat != 40.0 {
-		t.Error(errorMsg("Lat", "40.0", fmt.Sprintf("%f", vehicle.Lat)))
-		return
-	}
-	if vehicle.Lon != 40.0 {
-		t.Error(errorMsg("Lon", "40.0", fmt.Sprintf("%f", vehicle.Lon)))
-		return
-	}
 }
 
 

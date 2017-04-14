@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-const VERSION = "0.0.2"
+const VERSION = "0.1.0"
 
 type Configuration struct {
 	DB DBParams `json:"db`

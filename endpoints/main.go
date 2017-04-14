@@ -9,7 +9,7 @@
 //
 //
 //   Schemes: http, https
-//   Host: https://api.vehicles.neu.edu.tr
+//   Host: api.vehicles.neu.edu.tr
 //   BasePath: /
 //   Version: 0.0.1
 //

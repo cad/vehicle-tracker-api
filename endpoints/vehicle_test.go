@@ -8,10 +8,7 @@ import (
 	"encoding/json"
 	"testing"
 	"bytes"
-//	"runtime/debug"
-	api "github.com/cad/vehicle-tracker-api"
 	"github.com/cad/vehicle-tracker-api/repository"
-	"github.com/cad/vehicle-tracker-api/endpoints"
 )
 
 
@@ -33,7 +30,7 @@ func TestGetAllVehiclesEndpoint(t *testing.T) {
 	// Execute
 	req, _ := http.NewRequest("GET", "/vehicles/", nil)
 	res := httptest.NewRecorder()
-	api.GetServer().ServeHTTP(res, req)
+	GetRouter().ServeHTTP(res, req)
 
 	// Test
 	var vehicles []repository.Vehicle
@@ -70,7 +67,7 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 	// Execute
 	req, _ := http.NewRequest("POST", "/vehicles/", body)
 	res := httptest.NewRecorder()
-	api.GetServer().ServeHTTP(res, req)
+	GetRouter().ServeHTTP(res, req)
 
 	// Test
 	if res.Code != 200 {
@@ -92,7 +89,7 @@ func TestGetVehicleEndpoint(t *testing.T) {
 	// Execute
 	req, _ := http.NewRequest("GET", "/vehicles/test", nil)
 	res := httptest.NewRecorder()
-	api.GetServer().ServeHTTP(res, req)
+	GetRouter().ServeHTTP(res, req)
 
 	// Test
 	if res.Code != 200 {
@@ -126,15 +123,15 @@ func TestSyncVehicleEndpoint(t *testing.T) {
 	repository.CreateVehicle("test")
 
 	// Execute
-	vehicleSyncStruct := endpoints.VehicleSyncStruct{Lat: 40.0, Lon: 40.0}
-	vehicle_json, err := json.Marshal(&vehicleSyncStruct)
+	params := CoordinatePair{Lat: 40.0, Lon: 40.0}
+	params_json, err := json.Marshal(&params)
 	if err != nil {
 		t.Error(errorMsg("VehicleStruct", "Marshallable", "UnMarshallable"))
 	}
-	body := bytes.NewBuffer(vehicle_json)
+	body := bytes.NewBuffer(params_json)
 	req, _ := http.NewRequest("POST", "/vehicles/test/sync", body)
 	res := httptest.NewRecorder()
-	api.GetServer().ServeHTTP(res, req)
+	GetRouter().ServeHTTP(res, req)
 
 	// Test
 	if res.Code != 200 {
@@ -149,11 +146,11 @@ func TestSyncVehicleEndpoint(t *testing.T) {
 	}
 
 	if vehicle.Lat != 40.0 {
-		t.Error(errorMsg("Lat", "40.0", fmt.Sprintf("%d", vehicle.Lat)))
+		t.Error(errorMsg("Lat", "40.0", fmt.Sprintf("%f", vehicle.Lat)))
 		return
 	}
 	if vehicle.Lon != 40.0 {
-		t.Error(errorMsg("Lon", "40.0", fmt.Sprintf("%d", vehicle.Lon)))
+		t.Error(errorMsg("Lon", "40.0", fmt.Sprintf("%f", vehicle.Lon)))
 		return
 	}
 }
@@ -171,7 +168,7 @@ func TestDeleteVehicleEndpoint(t *testing.T) {
 	// Execute
 	req, _ := http.NewRequest("DELETE", "/vehicles/test", nil)
 	res := httptest.NewRecorder()
-	api.GetServer().ServeHTTP(res, req)
+	GetRouter().ServeHTTP(res, req)
 
 	// Test
 	if res.Code != 200 {

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/cad/vehicle-tracker-api/repository"
 	"log"
+	"fmt"
 )
 
 // VehicleResponse
@@ -162,7 +163,20 @@ func SyncVehicle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	repository.SyncVehicleByPlateID(params.PlateID, params.Location.Lat, params.Location.Lon)
+	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
+	if err != nil {
+		sendErrorMessage(w, "Vehicle not found", http.StatusNotFound)
+		return
+	}
+
+
+	response_json, err := json.Marshal(vehicle)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
 	sendContentType(w, "application/json")
+	w.Write(response_json)
+
 }
 
 

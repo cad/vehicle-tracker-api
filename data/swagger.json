@@ -13,10 +13,10 @@
   "info": {
     "description": "Vehicle Tracker API provides necessary methods and means to\ntrack ground and water vehicles positions.",
     "title": "Vehicle Tracker API",
-    "termsOfService": "http://api.vehicles.neu.edu.tr/",
+    "termsOfService": "https://api.vehicles.neu.edu.tr/",
     "version": "0.0.1"
   },
-  "host": "localhost",
+  "host": "api.vehicles.neu.edu.tr",
   "basePath": "/",
   "paths": {
     "/vehicles/": {

@@ -11,7 +11,7 @@
 //   Schemes: http, https
 //   Host: api.vehicles.neu.edu.tr
 //   BasePath: /
-//   Version: 0.0.1
+//   Version: 0.0.2
 //
 //   Consumes:
 //   - application/json

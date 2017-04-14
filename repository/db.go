@@ -1,7 +1,6 @@
 package repository
 
 import (
-//	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
@@ -16,7 +15,10 @@ func ConnectDB(dbType string, dbURL string) {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&Vehicle{})
+	db.AutoMigrate(
+		&Vehicle{},
+		&Agent{},
+	)
 }
 
 func CloseDB() {

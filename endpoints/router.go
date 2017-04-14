@@ -12,12 +12,16 @@ import (
 func GetRouter() http.Handler {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/vehicles/", GetAllVehicles).Methods("GET")
+	// Agents
+	router.HandleFunc("/agents/", GetAllAgents).Methods("GET")
+	router.HandleFunc("/agents/{uuid}/sync", SyncAgent).Methods("POST")
 
+	// Vehicles
+	router.HandleFunc("/vehicles/", GetAllVehicles).Methods("GET")
 	router.HandleFunc("/vehicles/", CreateNewVehicle).Methods("POST")
 	router.HandleFunc("/vehicles/{plate_id}", GetVehicle).Methods("GET")
 	router.HandleFunc("/vehicles/{plate_id}", DeleteVehicle).Methods("DELETE")
-	router.HandleFunc("/vehicles/{plate_id}/sync", SyncVehicle).Methods("POST")
+
 	dataFS, err := fs.New("/")
 	if err != nil {
 		log.Fatalf(err.Error())

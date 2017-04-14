@@ -19,7 +19,6 @@
 //   Produces:
 //   - application/json
 //
-//
 // swagger:meta
 package endpoints
 
@@ -29,9 +28,26 @@ import (
 	"log"
 )
 
+type GenericError struct {
+	// Error Message
+	//
+	// Required: true
+	Message string `json:"message"`
+}
+
+
+// Generic Error
+// swagger:response ErrorMsg
+type ErrorMsg struct {
+	// in:body
+	Body GenericError
+}
 
 func sendErrorMessage(w http.ResponseWriter, message string, status int) {
-	j, err := json.Marshal(map[string]string{"message": message})
+	errorMsg := ErrorMsg{
+		Body: GenericError{Message: message},
+	}
+	j, err := json.Marshal(errorMsg)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

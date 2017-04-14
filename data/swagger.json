@@ -186,6 +186,20 @@
       },
       "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
     },
+    "GenericError": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "description": "Error Message",
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
+    },
     "Vehicle": {
       "type": "object",
       "properties": {
@@ -211,6 +225,12 @@
     }
   },
   "responses": {
+    "ErrorMsg": {
+      "description": "Generic Error",
+      "schema": {
+        "$ref": "#/definitions/GenericError"
+      }
+    },
     "VehicleResponse": {
       "description": "VehicleResponse",
       "schema": {

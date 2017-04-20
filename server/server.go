@@ -22,14 +22,12 @@ func GetServer() http.Handler {
 }
 
 
-func ExecuteServer() {
-	if err := config.LoadConfigFile("./config.json"); err != nil {
-		fmt.Printf("Error: %s loading configuration file: %s\n", "./config.json", err)
+func ExecuteServer(configPath string) {
+	if err := config.LoadConfigFile(configPath); err != nil {
+		fmt.Printf("Error: %s loading configuration file: %s\n", configPath, err)
 		os.Exit(1)
 	}
 
-	//specFile := generate.NewSpecFile("github.com/cad/vehicle-tracker-api", "data/swagger.json")
-	//specFile.Execute([]string{})
 	repository.ConnectDB(config.C.DB.Type , config.C.DB.URL)
 
 	router := GetServer()

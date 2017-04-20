@@ -5,8 +5,10 @@ import (
 	"log"
 	"net/http"
 	_ "github.com/cad/vehicle-tracker-api/statik"
+	"github.com/cad/vehicle-tracker-api/config"
 	"github.com/cad/statik/fs"
 	"io/ioutil"
+	"encoding/json"
 )
 
 func GetRouter() http.Handler {
@@ -37,7 +39,28 @@ func GetRouter() http.Handler {
 		if err != nil {
 			log.Fatal(err)
 		}
-		w.Write(contents)
+		var data map[string]interface{}
+		err = json.Unmarshal(contents, &data)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Override
+		data["host"] = r.Host
+
+		s, ok := data["info"].(map[string]interface{})
+		if !ok {
+			log.Fatal("unknown type", s, ok)
+		}
+		s["version"] = config.VERSION
+		data["info"] = s
+
+		encoded_data, err := json.Marshal(data)
+		if err != nil {
+			log.Fatal(err)
+		}
+		sendContentType(w, "application/json")
+		w.Write(encoded_data)
 	})
 	router.HandleFunc("/docs/", func(w http.ResponseWriter, r *http.Request) {
 		specFile, err := dataFS.Open("/static/index.html")

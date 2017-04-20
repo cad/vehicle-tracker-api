@@ -3,28 +3,39 @@
 package main
 
 import (
-	"github.com/cad/vehicle-tracker-api/server"
-	"fmt"
 	"os"
-	"flag"
+	"github.com/urfave/cli"
+	"github.com/cad/vehicle-tracker-api/server"
+	"github.com/cad/vehicle-tracker-api/config"
 )
 
 func main() {
-	flag.Parse()
+	app := cli.NewApp()
+	app.Name = "vehicle-tracker-api"
+	app.Usage = "Vehicle Tracker API Server"
+	app.Version = config.VERSION
+	app.Commands = []cli.Command{
+		{
+			Name:    "run",
+			Aliases: []string{"r"},
+			Usage:   "",
+			Action: func(c *cli.Context) {
+				println("action:", "run")
+				configPath := c.String("config-path")
 
-	args := flag.Args()
+				// Run the App here
+				server.ExecuteServer(configPath)
+			},
 
-	if len(args)>0 {
-		switch args[0] {
-		case "serve":
-			server.ExecuteServer()
-		default:
-			fmt.Println("Invalid command")
-			os.Exit(1)
-		}
-	} else {
-		fmt.Println("Invalid command, please retry with the following format $ main serve")
-		os.Exit(1)
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "config-path",
+					Value: "config.json",
+					Usage: "Path to the config file",
+				},
+			},
+		},
 	}
 
+	app.Run(os.Args)
 }

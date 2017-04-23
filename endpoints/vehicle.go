@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/cad/vehicle-tracker-api/repository"
-	"log"
-	"fmt"
+//	"log"
 )
 
 // VehicleResponse
@@ -17,6 +16,16 @@ type VehicleResponse struct {
 	// in: body
 	Body struct {
 		Vehicle repository.Vehicle `json:"vehicle,required"`
+	}
+}
+
+// VehicleGroupResponse
+// swagger:response
+type VehicleGroupsResponse struct {
+	// VehicleGroup
+	// in: body
+	Body struct {
+		Groups []repository.Group `json:"group,required"`
 	}
 }
 
@@ -48,17 +57,17 @@ type GetVehicleParams struct {
 
 }
 
-// swagger:route GET /vehicles/{plate_id} Vehicles GetVehicle
+// swagger:route GET /vehicle/{plate_id} Vehicles GetVehicle
 // Get a vehicle from database.
 //
 //   Responses:
 //     default: ErrorMsg
-//     200: VehicleResponse
+//     200: VehicleSuccessVehicleResponse
 func GetVehicle(w http.ResponseWriter, req *http.Request) {
 	params := GetVehicleParams{PlateID: mux.Vars(req)["plate_id"]}
 
 	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
-	if vehicle == (repository.Vehicle{}) {
+	if vehicle.ID == 0 {
 		sendErrorMessage(w, "Not found", 404)
 		return
 	}
@@ -70,17 +79,17 @@ func GetVehicle(w http.ResponseWriter, req *http.Request) {
 }
 
 
-// swagger:route GET /vehicles/ Vehicles GetAllVehicles
+// swagger:route GET /vehicle/ Vehicles GetAllVehicles
 // Get all vehicles in the database.
 //
 //
 //   Responses:
 //     default: ErrorMsg
-//     200: VehiclesResponse
+//     200: VehicleSuccessVehiclesResponse
 func GetAllVehicles(w http.ResponseWriter, req *http.Request) {
 	var vehicles []repository.Vehicle
 	vehicles = repository.GetAllVehicles()
-	log.Println("Vehicles: ", vehicles)
+//	log.Println("Vehicles: ", vehicles)
 
 	j, err := json.Marshal(vehicles)
 	checkErr(w, err)
@@ -102,23 +111,38 @@ type CreateNewVehicleParams struct {
 		// required: true
 		PlateID string `json:"plate_id" valid:"required"`
 
+		// AgentID
+		//
+		// required: false
+		AgentID string `json:"agent_id"`
+
+		// Groups
+		//
+		// required: false
+		Groups []int `json:"groups"`
+
+		// Type
+		//
+		// required: true
+		Type string `json:"type" valid:"required"`
+
 	}
 
 }
 
-// swagger:route POST /vehicles/ Vehicles CreateNewVehicle
+// swagger:route POST /vehicle/ Vehicles CreateNewVehicle
 // Create a new vehicle record.
 //
 //
 //   Responses:
 //     default: ErrorMsg
-//     200: VehicleResponse
+//     200: VehicleSuccessVehicleResponse
 func CreateNewVehicle(w http.ResponseWriter, req *http.Request) {
 	var params CreateNewVehicleParams
 
 	decoder := json.NewDecoder(req.Body)
 
-	if err := decoder.Decode(&params); err != nil {
+	if err := decoder.Decode(&params.Ident); err != nil {
 		sendErrorMessage(w, "Error decoding the input", http.StatusBadRequest)
 		return
 	}
@@ -127,56 +151,29 @@ func CreateNewVehicle(w http.ResponseWriter, req *http.Request) {
 		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	repository.CreateVehicle(params.Ident.PlateID)
-	sendContentType(w, "application/json")
-}
 
+	err = repository.CreateVehicle(
+		params.Ident.PlateID,
+		params.Ident.AgentID,
+		params.Ident.Groups,
+		params.Ident.Type,
+	)
 
-// swagger:parameters SyncVehicle
-type SyncVehicleParams struct {
-
-	// PlateID is an unique identifier across vehicles
-	// in: path
-	// required: true
-	PlateID string `json:"plate_id" validate:"required"`
-
-	// Location represents the x,y location of the Vehicle
-	// in: body
-	// required: true
-	Location CoordinatePair `json:"location" validate:"required"`
-
-}
-
-// swagger:route POST /vehicles/{plate_id}/sync Vehicles SyncVehicle
-// Set position.
-//
-//
-//   Responses:
-//     default: ErrorMsg
-//     200: VehicleResponse
-func SyncVehicle(w http.ResponseWriter, req *http.Request) {
-	params := SyncVehicleParams{PlateID: mux.Vars(req)["plate_id"]}
-	decoder := json.NewDecoder(req.Body)
-
-	if err := decoder.Decode(&params.Location); err != nil {
-		sendErrorMessage(w, "Error decoding the input", http.StatusBadRequest)
+	if err != nil  {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	repository.SyncVehicleByPlateID(params.PlateID, params.Location.Lat, params.Location.Lon)
-	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
-	if err != nil {
-		sendErrorMessage(w, "Vehicle not found", http.StatusNotFound)
+	vehicle, err := repository.GetVehicleByPlateID(params.Ident.PlateID)
+	if err != nil  {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 
-	response_json, err := json.Marshal(vehicle)
-	if err != nil {
-		fmt.Println("error:", err)
-	}
+	j, err := json.Marshal(vehicle)
+	checkErr(w, err)
 	sendContentType(w, "application/json")
-	w.Write(response_json)
-
+	w.Write(j)
 }
 
 
@@ -190,21 +187,102 @@ type DeleteVehicleParams struct {
 
 }
 
-// swagger:route DELETE /vehicles/{plate_id} Vehicles DeleteVehicle
+// swagger:route DELETE /vehicle/{plate_id} Vehicles DeleteVehicle
 // Delete a vehicle.
 //
 //
 //   Responses:
 //     default: ErrorMsg
-//     200: VehicleResponse
+//     200: VehicleSuccessVehicleResponse
 func DeleteVehicle(w http.ResponseWriter, req *http.Request) {
 	params := DeleteVehicleParams{PlateID: mux.Vars(req)["PlateID"]}
 
-	error := repository.DeleteVehicleByPlateID(params.PlateID)
+	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
+	if err != nil {
+		sendErrorMessage(w, "There is no vehicle with that ID", http.StatusNotFound)
+		return
+	}
 
+	error := repository.DeleteVehicleByPlateID(params.PlateID)
 	if error!=nil {
 		sendErrorMessage(w, "There is no vehicle with that ID", http.StatusNotFound)
 		return
 	}
+
+	j, err := json.Marshal(vehicle)
+	checkErr(w, err)
 	sendContentType(w, "application/json")
+	w.Write(j)
+}
+
+
+
+// swagger:parameters CreateNewGroup
+type CreateNewGroupParams struct {
+
+	// Ident represents the identity definition of the Group	       // in: body
+	// required: true
+	Ident struct {
+
+		// Name
+		//
+		// required: true
+		Name string `json:"name" valid:"required"`
+	}
+
+}
+
+// swagger:route POST /vehicle/group/ Vehicles CreateNewGroup
+// Create a new vehicle group.
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleSuccessVehicleGroupResponse
+func CreateNewGroup(w http.ResponseWriter, req *http.Request) {
+	var params CreateNewGroupParams
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&params.Ident); err != nil {
+		sendErrorMessage(w, "Error decoding the input", http.StatusBadRequest)
+		return
+	}
+	_, err := valid.ValidateStruct(params)
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	groupID, err := repository.CreateNewGroup(
+		params.Ident.Name,
+	)
+
+	if err != nil  {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	group, err := repository.GetGroupByID(groupID)
+
+	j, err := json.Marshal(group)
+	checkErr(w, err)
+	sendContentType(w, "application/json")
+	w.Write(j)
+}
+
+
+// swagger:route GET /vehicle/group/ Vehicles GetAllGroups
+// Get all vehicle groups in the database.
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleSuccessVehicleGroupsResponse
+func GetAllGroups(w http.ResponseWriter, req *http.Request) {
+	var groups []repository.Group
+	groups = repository.GetAllGroups()
+	j, err := json.Marshal(groups)
+	checkErr(w, err)
+	sendContentType(w, "application/json")
+	w.Write(j)
 }

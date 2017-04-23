@@ -93,7 +93,7 @@ func VehicleSetAgent(plateID,uUID string) error {
 	return nil
 }
 
-func CreateVehicle (plateID string, agentID string, groupIDs []int, vehicleType string) error {
+func CreateVehicle (plateID string, agentUUID string, groupIDs []int, vehicleType string) error {
 	groups := make([]Group, 0)
 	// Sanitize incoming
 	for _, item := range groupIDs {
@@ -122,11 +122,13 @@ func CreateVehicle (plateID string, agentID string, groupIDs []int, vehicleType 
 		PlateID: plateID,  // TODO(cad): sanitize `plateID`
 		Type: vehicleType,
 	}
-	db.Where(&Agent{UUID: agentID}).First(&vehicle.Agent)
-	if vehicle.Agent == (Agent{}) {
-		return &VehicleError{What: "Agent", Type: "Not-Found", Arg: agentID}
+	var a Agent
+	db.Where(&Agent{UUID: agentUUID}).First(&a)
+	if a == (Agent{}) {
+		return &VehicleError{What: "Agent", Type: "Not-Found", Arg: agentUUID}
 	}
-
+	vehicle.Agent = a
+	vehicle.AgentID = a.ID
 	vehicle.Groups = make([]Group,0)
 	// Set groups if not empty
 	if len(groups) > 0 {

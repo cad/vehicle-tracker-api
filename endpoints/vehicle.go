@@ -177,7 +177,7 @@ type CreateNewVehicleParams struct {
 		// AgentID
 		//
 		// required: false
-		AgentID string `json:"agent_id"`
+		AgentUUID string `json:"agent_uuid"`
 
 		// Groups
 		//
@@ -217,7 +217,7 @@ func CreateNewVehicle(w http.ResponseWriter, req *http.Request) {
 
 	err = repository.CreateVehicle(
 		params.Ident.PlateID,
-		params.Ident.AgentID,
+		params.Ident.AgentUUID,
 		params.Ident.Groups,
 		params.Ident.Type,
 	)

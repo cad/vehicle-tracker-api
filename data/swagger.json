@@ -106,10 +106,10 @@
                 "type"
               ],
               "properties": {
-                "agent_id": {
+                "agent_uuid": {
                   "description": "AgentID",
                   "type": "string",
-                  "x-go-name": "AgentID"
+                  "x-go-name": "AgentUUID"
                 },
                 "groups": {
                   "description": "Groups",

@@ -24,7 +24,7 @@ func GetRouter() http.Handler {
 	router.HandleFunc("/vehicle/", CreateNewVehicle).Methods("POST")
 	router.HandleFunc("/vehicle/group/", GetAllGroups).Methods("GET")
 	router.HandleFunc("/vehicle/group/", CreateNewGroup).Methods("POST")
-
+	router.HandleFunc("/vehicle/{plate_id}/agent", VehicleSetAgent).Methods("POST")
 	router.HandleFunc("/vehicle/{plate_id}", GetVehicle).Methods("GET")
 	router.HandleFunc("/vehicle/{plate_id}", DeleteVehicle).Methods("DELETE")
 

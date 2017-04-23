@@ -40,7 +40,7 @@ type Group struct {
 
 func GetVehicleByPlateID (plateID string) (Vehicle, error) {
 	var vehicle Vehicle
-	db.Where(&Vehicle{PlateID: plateID}).First(&vehicle)
+	db.Preload("Groups").Preload("Agent").Where(&Vehicle{PlateID: plateID}).First(&vehicle)
 	if vehicle.ID != 0 {
 		return vehicle, nil
 	}
@@ -79,6 +79,19 @@ func FilterVehicles (types []string, groupids []uint) []Vehicle {
 	return vehicles
 }
 
+func VehicleSetAgent(plateID,uUID string) error {
+	vehicle, err := GetVehicleByPlateID(plateID)
+	if err != nil {
+		return err
+	}
+	vehicle.Agent, err = GetAgentByUUID(uUID)
+	if err != nil {
+		return err
+	}
+
+	db.Save(&vehicle)
+	return nil
+}
 
 func CreateVehicle (plateID string, agentID string, groupIDs []int, vehicleType string) error {
 	groups := make([]Group, 0)

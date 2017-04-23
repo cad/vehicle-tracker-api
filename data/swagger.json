@@ -280,6 +280,52 @@
           }
         }
       }
+    },
+    "/vehicle/{plate_id}/agent": {
+      "post": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Set vehicle agent.",
+        "operationId": "VehicleSetAgent",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "PlateID",
+            "description": "PlateID is a unique identifier across the vehicles",
+            "name": "plate_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Agent represents an agent",
+            "name": "Agent",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "uuid"
+              ],
+              "properties": {
+                "uuid": {
+                  "description": "UUID",
+                  "type": "string",
+                  "x-go-name": "UUID"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehicleResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
     }
   },
   "definitions": {

@@ -240,6 +240,69 @@ func CreateNewVehicle(w http.ResponseWriter, req *http.Request) {
 }
 
 
+// swagger:parameters VehicleSetAgent
+type VehicleSetAgentParams struct {
+	// PlateID is a unique identifier across the vehicles
+	// in: path
+	// required: true
+	PlateID string `json:"plate_id"`
+
+	// Agent represents an agent
+	// in: body
+	// required: true
+	Agent struct {
+
+		// UUID
+		//
+		// required: true
+		UUID string `json:"uuid" valid:"required"`
+
+	}
+
+}
+
+// swagger:route POST /vehicle/{plate_id}/agent Vehicles VehicleSetAgent
+// Set vehicle agent.
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleSuccessVehicleResponse
+func VehicleSetAgent(w http.ResponseWriter, req *http.Request) {
+	var params VehicleSetAgentParams
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&params.Agent); err != nil {
+		sendErrorMessage(w, "Error decoding the input", http.StatusBadRequest)
+		return
+	}
+	params.PlateID = mux.Vars(req)["plate_id"]
+	_, err := valid.ValidateStruct(params)
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = repository.VehicleSetAgent(params.PlateID, params.Agent.UUID)
+	if err != nil  {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
+	if err != nil  {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+
+	j, err := json.Marshal(vehicle)
+	checkErr(w, err)
+	sendContentType(w, "application/json")
+	w.Write(j)
+}
+
+
 // swagger:parameters DeleteVehicle
 type DeleteVehicleParams struct {
 

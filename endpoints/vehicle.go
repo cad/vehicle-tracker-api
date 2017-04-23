@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/cad/vehicle-tracker-api/repository"
+	"strings"
+	"strconv"
 //	"log"
 )
 
@@ -90,6 +92,67 @@ func GetAllVehicles(w http.ResponseWriter, req *http.Request) {
 	var vehicles []repository.Vehicle
 	vehicles = repository.GetAllVehicles()
 //	log.Println("Vehicles: ", vehicles)
+
+	j, err := json.Marshal(vehicles)
+	checkErr(w, err)
+	sendContentType(w, "application/json")
+	w.Write(j)
+}
+
+
+// swagger:parameters FilterVehicles
+type FilterVehiclesParams struct {
+
+	// VehicleTypes
+	//
+	// Comma seperated list of vehicle types.
+	// e.g. "SCHOOL-BUS,SOLAR-CAR"
+	//
+	// in: query
+	// required: false
+	VehicleTypes string `json:"vehicle_types"`
+
+	// VehicleGroups
+	//
+	// Comma seperated list of vehicle group ids.
+	// e.g. "1,3"
+	//
+	// in: query
+	// required: false
+	VehicleGroups string `json:"vehicle_groups"`
+
+}
+
+// swagger:route GET /vehicle/filter Vehicles FilterVehicles
+// Get all vehicles in the database.
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleSuccessVehiclesResponse
+func FilterVehicles(w http.ResponseWriter, req *http.Request) {
+	params := FilterVehiclesParams{
+		VehicleTypes: req.URL.Query().Get("vehicle_types"),
+		VehicleGroups: req.URL.Query().Get("vehicle_types"),
+	}
+	types := strings.Split(params.VehicleTypes, ",")
+	groups := strings.Split(params.VehicleGroups, ",")
+
+	var groupIDs []uint
+	index := 0
+	for _, element := range groups {
+		val, err := strconv.Atoi(element)
+		if err != nil {
+			//sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+			continue
+		}
+		groupIDs[index] = uint(val)
+		index = index  + 1
+	}
+
+	var vehicles []repository.Vehicle
+
+	vehicles = repository.FilterVehicles(types, groupIDs)
 
 	j, err := json.Marshal(vehicles)
 	checkErr(w, err)

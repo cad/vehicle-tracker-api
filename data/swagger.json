@@ -144,6 +144,39 @@
         }
       }
     },
+    "/vehicle/filter": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Get all vehicles in the database.",
+        "operationId": "FilterVehicles",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "VehicleTypes",
+            "description": "VehicleTypes\n\nComma seperated list of vehicle types.\ne.g. \"SCHOOL-BUS,SOLAR-CAR\"",
+            "name": "vehicle_types",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "VehicleGroups",
+            "description": "VehicleGroups\n\nComma seperated list of vehicle group ids.\ne.g. \"1,3\"",
+            "name": "vehicle_groups",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehiclesResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
     "/vehicle/group/": {
       "get": {
         "tags": [

@@ -57,6 +57,29 @@ func GetAllVehicles () []Vehicle {
 }
 
 
+func FilterVehicles (types []string, groupids []uint) []Vehicle {
+	var vehicles []Vehicle
+
+	q := db.Preload("Groups").Preload("Agent")
+
+	if len(types) > 1 {
+		q = q.Where("type in (?)", types)
+	} else if len(types) == 1 {
+		q = q.Where("type = ?", types[0])
+	}
+
+	if len(groupids) > 1 {
+		q = q.Where("groupid in (?)", groupids)
+	} else if len(groupids) > 1 {
+		q = q.Where("groupid = ?", groupids[0])
+	}
+
+	q.Find(&vehicles)
+
+	return vehicles
+}
+
+
 func CreateVehicle (plateID string, agentID string, groupIDs []int, vehicleType string) error {
 	groups := make([]Group, 0)
 	// Sanitize incoming

@@ -20,6 +20,7 @@ func GetRouter() http.Handler {
 
 	// Vehicles
 	router.HandleFunc("/vehicle/", GetAllVehicles).Methods("GET")
+	router.HandleFunc("/vehicle/filter", FilterVehicles).Methods("GET")
 	router.HandleFunc("/vehicle/", CreateNewVehicle).Methods("POST")
 	router.HandleFunc("/vehicle/group/", GetAllGroups).Methods("GET")
 	router.HandleFunc("/vehicle/group/", CreateNewGroup).Methods("POST")

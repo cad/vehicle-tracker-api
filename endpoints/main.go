@@ -46,7 +46,7 @@ func sendErrorMessage(w http.ResponseWriter, message string, status int) {
 	errorMsg := ErrorMsg{
 		Body: GenericError{Message: message},
 	}
-	j, err := json.Marshal(errorMsg)
+	j, err := json.Marshal(errorMsg.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

@@ -18,6 +18,7 @@ func ConnectDB(dbType string, dbURL string) {
 	db.AutoMigrate(
 		&Vehicle{},
 		&Agent{},
+		&Group{},
 	)
 }
 

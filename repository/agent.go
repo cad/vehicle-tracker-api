@@ -98,5 +98,5 @@ type AgentError struct {
 
 
 func (e AgentError) Error() string {
-	return fmt.Sprintf("%s-%s: %s", e.What, e.Arg, e.Type)
+	return fmt.Sprintf("%s: <%s> %s", e.Type, e.What, e.Arg)
 }

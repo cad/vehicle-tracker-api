@@ -16,7 +16,7 @@ type GPSData struct {
 	TS string  `json:"ts"`
 }
 
-// swagger:route GET /agents/ Agents GetAllAgents
+// swagger:route GET /agent/ Agents GetAllAgents
 // List all the agents.
 //
 //
@@ -50,7 +50,7 @@ type SyncAgentParams struct {
 }
 
 
-// swagger:route POST /agents/{uuid}/sync Agents SyncAgent
+// swagger:route POST /agent/{uuid}/sync Agents SyncAgent
 // Send GPS data from agent.
 //
 //

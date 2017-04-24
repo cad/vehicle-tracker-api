@@ -19,10 +19,17 @@ func TestGetAllVehiclesEndpoint(t *testing.T) {
 	defer os.Remove("/tmp/test.db")
 
 	// Prepare
-	repository.CreateVehicle("test")
+	agent, _ := repository.CreateNewAgent("string")
+	groupID, _ := repository.CreateNewGroup("string")
+	_ = repository.CreateVehicle(
+		"test",
+		agent.UUID,
+		[]int{int(groupID)},
+		"SCHOOL-BUS",
+	)
 
 	// Execute
-	req, _ := http.NewRequest("GET", "/vehicles/", nil)
+	req, _ := http.NewRequest("GET", "/vehicle/", nil)
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
@@ -30,7 +37,7 @@ func TestGetAllVehiclesEndpoint(t *testing.T) {
 	var vehicles []repository.Vehicle
 	err := json.Unmarshal([]byte(res.Body.String()), &vehicles)
 	if err != nil {
-		t.Error(errorMsg("Vehicles", "Unmarshallable", "NotUnmarshallable"))
+		t.Error(errorMsg("Vehicles", "Marshallable", "NotUnmarshallable"))
 		return
 	}
 
@@ -38,6 +45,24 @@ func TestGetAllVehiclesEndpoint(t *testing.T) {
 		t.Error(errorMsg("PlateID", "test", vehicles[0].PlateID))
 		return
 	}
+
+	if vehicles[0].Groups[0].Name != "string" {
+		t.Error(errorMsg("Groups[0].Name", "test", vehicles[0].Groups[0].Name))
+		return
+	}
+
+	if vehicles[0].Type != "SCHOOL-BUS" {
+		t.Error(errorMsg("Type", "SCHOOL-BUS", vehicles[0].Type))
+		return
+	}
+
+	if vehicles[0].Agent.UUID != agent.UUID {
+		t.Error(errorMsg("Agent.UUID", fmt.Sprintf("%d", agent.UUID), fmt.Sprintf("%d", vehicles[0].Agent.UUID)))
+		return
+	}
+
+
+
 }
 
 
@@ -48,10 +73,38 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 	defer os.Remove("/tmp/test.db")
 
 	// Prepare
-	type vehicleStruct struct {
-		PlateID string `json:"plate_id"`
+	type Ident struct {
+
+		// PlateID
+		//
+		// required: true
+		PlateID string `json:"plate_id" valid:"required"`
+
+		// AgentID
+		//
+		// required: false
+		AgentUUID string `json:"agent_uuid"`
+
+		// Groups
+		//
+		// required: false
+		Groups []int `json:"groups"`
+
+		// Type
+		//
+		// required: true
+		Type string `json:"type" valid:"required"`
+
 	}
-	vehicle := vehicleStruct{PlateID: "test"}
+
+	agent, _ := repository.CreateNewAgent("string")
+	groupID, _ := repository.CreateNewGroup("string")
+	vehicle := Ident{
+		PlateID: "test",
+		AgentUUID: agent.UUID,
+		Groups: []int{int(groupID)},
+		Type: "SCHOOL-BUS",
+	}
 	vehicle_json, err := json.Marshal(&vehicle)
 	if err != nil {
 		t.Error(errorMsg("Vehicle", "Marshallable", "NotMarshallable"))
@@ -59,7 +112,7 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 	body := bytes.NewBuffer(vehicle_json)
 
 	// Execute
-	req, _ := http.NewRequest("POST", "/vehicles/", body)
+	req, _ := http.NewRequest("POST", "/vehicle/", body)
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
@@ -78,10 +131,18 @@ func TestGetVehicleEndpoint(t *testing.T) {
 	defer os.Remove("/tmp/test.db")
 
 	// Prepare
-	repository.CreateVehicle("test")
+	agent, _ := repository.CreateNewAgent("string")
+	groupID, _ := repository.CreateNewGroup("string")
+	_ = repository.CreateVehicle(
+		"test",
+		agent.UUID,
+		[]int{int(groupID)},
+		"SCHOOL-BUS",
+	)
+
 
 	// Execute
-	req, _ := http.NewRequest("GET", "/vehicles/test", nil)
+	req, _ := http.NewRequest("GET", "/vehicle/test", nil)
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
@@ -104,6 +165,23 @@ func TestGetVehicleEndpoint(t *testing.T) {
 		return
 	}
 
+	if vehicle.Groups[0].Name != "string" {
+		t.Error(errorMsg("Groups[0].Name", "test", vehicle.Groups[0].Name))
+		return
+	}
+
+	if vehicle.Type != "SCHOOL-BUS" {
+		t.Error(errorMsg("Type", "SCHOOL-BUS", vehicle.Type))
+		return
+	}
+
+	if vehicle.Agent.UUID != agent.UUID {
+		t.Error(errorMsg("Agent.UUID", fmt.Sprintf("%d", agent.UUID), fmt.Sprintf("%d", vehicle.Agent.UUID)))
+		return
+	}
+
+
+
 }
 
 
@@ -114,10 +192,18 @@ func TestDeleteVehicleEndpoint(t *testing.T) {
 	defer os.Remove("/tmp/test.db")
 
 	// Prepare
-	repository.CreateVehicle("test")
+	agent, _ := repository.CreateNewAgent("string")
+	groupID, _ := repository.CreateNewGroup("string")
+	_ = repository.CreateVehicle(
+		"test",
+		agent.UUID,
+		[]int{int(groupID)},
+		"SCHOOL-BUS",
+	)
+
 
 	// Execute
-	req, _ := http.NewRequest("DELETE", "/vehicles/test", nil)
+	req, _ := http.NewRequest("DELETE", "/vehicle/test", nil)
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
@@ -132,4 +218,200 @@ func TestDeleteVehicleEndpoint(t *testing.T) {
 		t.Error(errorMsg("len(vehicles)", "0", fmt.Sprintf("%d", len(vehicles))))
 		return
 	}
+}
+
+// Test Set Agent
+func TestSetVehicleAgentEndpoint(t *testing.T) {
+	// Init
+	repository.ConnectDB("sqlite3", "/tmp/test.db")
+	defer repository.CloseDB()
+	defer os.Remove("/tmp/test.db")
+
+	// Prepare
+
+	agent, _ := repository.CreateNewAgent("string")
+	groupID, _ := repository.CreateNewGroup("string")
+	_ = repository.CreateVehicle(
+		"test",
+		agent.UUID,
+		[]int{int(groupID)},
+		"SCHOOL-BUS",
+	)
+	newAgent, _ := repository.CreateNewAgent("another-string")
+	params := VehicleSetAgentParams{
+		PlateID: "test",
+		Agent: struct {
+			UUID string `json:"uuid" valid:"required"`
+		}{
+			UUID: newAgent.UUID,
+		},
+	}
+	vehicle_json, err := json.Marshal(&params.Agent)
+	if err != nil {
+		t.Error(errorMsg("Vehicle", "Marshallable", "NotMarshallable"))
+	}
+	body := bytes.NewBuffer(vehicle_json)
+
+	// Execute
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/vehicle/%s/agent", params.PlateID), body)
+	res := httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	if res.Code != 200 {
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		return
+	}
+
+	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
+	if err != nil {
+		t.Error(errorMsg("Vehicle", "ToBeAbleToGet", "CannotGet"))
+	}
+
+	if vehicle.Agent.UUID != params.Agent.UUID {
+		t.Error(errorMsg("vehicle.Agent.UUID", params.Agent.UUID, vehicle.Agent.UUID))
+	}
+}
+
+
+// Test Filter
+func TestFilterVehicleEndpoint(t *testing.T) {
+	// Init
+	repository.ConnectDB("sqlite3", "/tmp/test.db")
+	defer repository.CloseDB()
+	defer os.Remove("/tmp/test.db")
+
+	// Prepare
+	agent, _ := repository.CreateNewAgent("string")
+	newAgent, _ := repository.CreateNewAgent("another-string")
+	groupID, _ := repository.CreateNewGroup("string")
+	newGroupID, _ := repository.CreateNewGroup("stringg")
+	_ = repository.CreateVehicle(
+		"test1",
+		agent.UUID,
+		[]int{int(groupID)},
+		"SCHOOL-BUS",
+	)
+	_ = repository.CreateVehicle(
+		"test2",
+		newAgent.UUID,
+		[]int{int(newGroupID)},
+		"SCHOOL-BUS",
+	)
+
+	// Execute
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/vehicle/filter?vehicle_group_id=%d", newGroupID), nil)
+	res := httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	if res.Code != 200 {
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		return
+	}
+
+	var vehicles []repository.Vehicle
+	err := json.Unmarshal([]byte(res.Body.String()), &vehicles)
+	if err != nil {
+		t.Error(errorMsg("Vehicle", "Unmarshallable", "NotUnmarshallable"))
+		return
+	}
+	fmt.Println(res.Body.String(), newGroupID)
+	fmt.Printf("/vehicle/filter?vehicle_groups=%d", newGroupID)
+	if vehicles[0].Groups[0].ID != newGroupID {
+		t.Error(errorMsg("Vehicle", fmt.Sprintf("%d", newGroupID), fmt.Sprintf("%d", vehicles[0].Groups[0].ID)))
+		return
+
+	}
+}
+// Test Group Create
+func TestCreateVehicleGroupEndpoint(t *testing.T) {
+	// Init
+	repository.ConnectDB("sqlite3", "/tmp/test.db")
+	defer repository.CloseDB()
+	defer os.Remove("/tmp/test.db")
+
+	// Prepare
+	params := CreateNewGroupParams{
+		Group: struct {
+			Name string `json:"name" valid:"required"`
+		}{Name: "string"},
+	}
+	_, _ = repository.CreateNewAgent("string")
+	payload_json, err := json.Marshal(&params.Group)
+	if err != nil {
+		t.Error(errorMsg("Vehicle", "Marshallable", "NotMarshallable"))
+	}
+	body := bytes.NewBuffer(payload_json)
+
+	// Execute
+	req, _ := http.NewRequest("POST", "/vehicle/group/", body)
+	res := httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	if res.Code != 200 {
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		return
+	}
+	var group repository.Group
+	err = json.Unmarshal([]byte(res.Body.String()), &group)
+	if err != nil {
+		t.Error(errorMsg("Vehicle", "Unmarshallable", "NotUnmarshallable"))
+		return
+	}
+
+	createdGroup, _ := repository.GetGroupByName("string")
+
+	if createdGroup.ID != group.ID {
+		t.Error(errorMsg("createdGroup.ID", fmt.Sprintf("%d", group.ID), fmt.Sprintf("%d",createdGroup.ID)))
+		return
+	}
+}
+
+
+
+func TestGetAllVehicleGroupsEndpoint(t *testing.T) {
+	// Init
+	repository.ConnectDB("sqlite3", "/tmp/test.db")
+	defer repository.CloseDB()
+	defer os.Remove("/tmp/test.db")
+
+	// Prepare
+	repository.CreateNewGroup("string")
+
+	// Execute
+	req, _ := http.NewRequest("GET", "/vehicle/group/", nil)
+	res := httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	if res.Code != 200 {
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		return
+	}
+	var groups []repository.Group
+	err := json.Unmarshal([]byte(res.Body.String()), &groups)
+	if err != nil {
+		t.Error(errorMsg("Vehicle", "Unmarshallable", "NotUnmarshallable"))
+		return
+	}
+
+	createdGroups := repository.GetAllGroups()
+
+	if len(createdGroups) != len(groups) {
+		t.Error(errorMsg("len(createdGroups)", fmt.Sprintf("%d", len(groups)), fmt.Sprintf("%d",len(createdGroups))))
+		return
+	}
+
+	if createdGroups[0].ID != groups[0].ID {
+		t.Error(errorMsg("createdGroups[0].ID", fmt.Sprintf("%d", groups[0].ID), fmt.Sprintf("%d",createdGroups[0].ID)))
+		return
+	}
+
+	if createdGroups[0].Name != groups[0].Name {
+		t.Error(errorMsg("createdGroups[0].Name", fmt.Sprintf("%d", groups[0].Name), fmt.Sprintf("%d",createdGroups[0].Name)))
+		return
+	}
+
 }

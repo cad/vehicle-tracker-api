@@ -18,7 +18,7 @@
   "host": "api.vehicles.neu.edu.tr",
   "basePath": "/",
   "paths": {
-    "/agents/": {
+    "/agent/": {
       "get": {
         "tags": [
           "Agents"
@@ -35,7 +35,7 @@
         }
       }
     },
-    "/agents/{uuid}/sync": {
+    "/agent/{uuid}/sync": {
       "post": {
         "tags": [
           "Agents"
@@ -71,7 +71,7 @@
         }
       }
     },
-    "/vehicles/": {
+    "/vehicle/": {
       "get": {
         "tags": [
           "Vehicles"
@@ -80,7 +80,7 @@
         "operationId": "GetAllVehicles",
         "responses": {
           "200": {
-            "$ref": "#/responses/VehiclesResponse"
+            "$ref": "#/responses/VehicleSuccessVehiclesResponse"
           },
           "default": {
             "$ref": "#/responses/ErrorMsg"
@@ -102,13 +102,33 @@
             "schema": {
               "type": "object",
               "required": [
-                "plate_id"
+                "plate_id",
+                "type"
               ],
               "properties": {
+                "agent_uuid": {
+                  "description": "AgentID",
+                  "type": "string",
+                  "x-go-name": "AgentUUID"
+                },
+                "groups": {
+                  "description": "Groups",
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "x-go-name": "Groups"
+                },
                 "plate_id": {
                   "description": "PlateID",
                   "type": "string",
                   "x-go-name": "PlateID"
+                },
+                "type": {
+                  "description": "Type",
+                  "type": "string",
+                  "x-go-name": "Type"
                 }
               }
             }
@@ -116,7 +136,7 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/VehicleResponse"
+            "$ref": "#/responses/VehicleSuccessVehicleResponse"
           },
           "default": {
             "$ref": "#/responses/ErrorMsg"
@@ -124,7 +144,94 @@
         }
       }
     },
-    "/vehicles/{plate_id}": {
+    "/vehicle/filter": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Filter vehicles in the database.",
+        "operationId": "FilterVehicles",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "VehicleType",
+            "description": "VehicleType\n\nVehicleType to be filtered.\ne.g: \"SCHOOL-BUS\"",
+            "name": "vehicle_type",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "VehicleGroupID",
+            "description": "VehicleGroup\n\nVehicleGroup id to be filtered.\ne.g: 3",
+            "name": "vehicle_group_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehiclesResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
+    "/vehicle/group/": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Get all vehicle groups in the database.",
+        "operationId": "GetAllGroups",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehicleGroupsResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Create a new vehicle group.",
+        "operationId": "CreateNewGroup",
+        "parameters": [
+          {
+            "description": "Group",
+            "name": "Group",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "description": "Name",
+                  "type": "string",
+                  "x-go-name": "Name"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehicleGroupResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
+    "/vehicle/{plate_id}": {
       "get": {
         "tags": [
           "Vehicles"
@@ -143,7 +250,7 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/VehicleResponse"
+            "$ref": "#/responses/VehicleSuccessVehicleResponse"
           },
           "default": {
             "$ref": "#/responses/ErrorMsg"
@@ -168,7 +275,7 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/VehicleResponse"
+            "$ref": "#/responses/VehicleSuccessVehicleResponse"
           },
           "default": {
             "$ref": "#/responses/ErrorMsg"
@@ -176,36 +283,45 @@
         }
       }
     },
-    "/vehicles/{plate_id}/sync": {
+    "/vehicle/{plate_id}/agent": {
       "post": {
         "tags": [
           "Vehicles"
         ],
-        "summary": "Set position.",
-        "operationId": "SyncVehicle",
+        "summary": "Set vehicle agent.",
+        "operationId": "VehicleSetAgent",
         "parameters": [
           {
             "type": "string",
             "x-go-name": "PlateID",
-            "description": "PlateID is an unique identifier across vehicles",
+            "description": "PlateID is a unique identifier across the vehicles",
             "name": "plate_id",
             "in": "path",
             "required": true
           },
           {
-            "x-go-name": "Location",
-            "description": "Location represents the x,y location of the Vehicle",
-            "name": "location",
+            "description": "Agent represents an agent",
+            "name": "Agent",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/CoordinatePair"
+              "type": "object",
+              "required": [
+                "uuid"
+              ],
+              "properties": {
+                "uuid": {
+                  "description": "UUID",
+                  "type": "string",
+                  "x-go-name": "UUID"
+                }
+              }
             }
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/VehicleResponse"
+            "$ref": "#/responses/VehicleSuccessVehicleResponse"
           },
           "default": {
             "$ref": "#/responses/ErrorMsg"
@@ -244,29 +360,6 @@
       },
       "x-go-package": "github.com/cad/vehicle-tracker-api/repository"
     },
-    "CoordinatePair": {
-      "description": "CoordinatePair represents a location on earth",
-      "type": "object",
-      "required": [
-        "lat",
-        "lon"
-      ],
-      "properties": {
-        "lat": {
-          "description": "Latitude",
-          "type": "number",
-          "format": "double",
-          "x-go-name": "Lat"
-        },
-        "lon": {
-          "description": "Longtitude",
-          "type": "number",
-          "format": "double",
-          "x-go-name": "Lon"
-        }
-      },
-      "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
-    },
     "GPSData": {
       "type": "object",
       "properties": {
@@ -299,22 +392,41 @@
       },
       "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
     },
+    "Group": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/repository"
+    },
     "Vehicle": {
       "type": "object",
       "properties": {
-        "lat": {
-          "type": "number",
-          "format": "double",
-          "x-go-name": "Lat"
+        "agent": {
+          "$ref": "#/definitions/Agent"
         },
-        "lon": {
-          "type": "number",
-          "format": "double",
-          "x-go-name": "Lon"
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Group"
+          },
+          "x-go-name": "Groups"
         },
         "plate_id": {
           "type": "string",
           "x-go-name": "PlateID"
+        },
+        "type": {
+          "type": "string",
+          "x-go-name": "Type"
         },
         "updated_at": {
           "x-go-name": "UpdatedAt"
@@ -348,6 +460,21 @@
         "$ref": "#/definitions/GenericError"
       }
     },
+    "VehicleGroupsResponse": {
+      "description": "VehicleGroupResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Group"
+            },
+            "x-go-name": "Groups"
+          }
+        }
+      }
+    },
     "VehicleResponse": {
       "description": "VehicleResponse",
       "schema": {
@@ -356,6 +483,36 @@
           "vehicle": {
             "$ref": "#/definitions/Vehicle"
           }
+        }
+      }
+    },
+    "VehicleSuccessVehicleGroupResponse": {
+      "description": "Returns a vehicle group",
+      "schema": {
+        "$ref": "#/definitions/Group"
+      }
+    },
+    "VehicleSuccessVehicleGroupsResponse": {
+      "description": "Returns list of vehicle groups",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Group"
+        }
+      }
+    },
+    "VehicleSuccessVehicleResponse": {
+      "description": "Returns a vehicle",
+      "schema": {
+        "$ref": "#/definitions/Vehicle"
+      }
+    },
+    "VehicleSuccessVehiclesResponse": {
+      "description": "Returns list of vehicles",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Vehicle"
         }
       }
     }

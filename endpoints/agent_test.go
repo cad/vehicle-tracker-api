@@ -28,7 +28,7 @@ func TestGetAllAgentsEndpoint(t *testing.T) {
 	_, _ = repository.CreateNewAgent("test")
 
 	// Execute
-	req, _ := http.NewRequest("GET", "/agents/", nil)
+	req, _ := http.NewRequest("GET", "/agent/", nil)
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
@@ -63,7 +63,7 @@ func TestSyncAgentEndpoint(t *testing.T) {
 		t.Error(errorMsg("AgentStruct", "Marshallable", "UnMarshallable"))
 	}
 	body := bytes.NewBuffer(params_json)
-	req, _ := http.NewRequest("POST", "/agents/test/sync", body)
+	req, _ := http.NewRequest("POST", "/agent/test/sync", body)
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 

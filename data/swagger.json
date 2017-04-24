@@ -149,21 +149,22 @@
         "tags": [
           "Vehicles"
         ],
-        "summary": "Get all vehicles in the database.",
+        "summary": "Filter vehicles in the database.",
         "operationId": "FilterVehicles",
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "VehicleTypes",
-            "description": "VehicleTypes\n\nComma seperated list of vehicle types.\ne.g. \"SCHOOL-BUS,SOLAR-CAR\"",
-            "name": "vehicle_types",
+            "x-go-name": "VehicleType",
+            "description": "VehicleType\n\nVehicleType to be filtered.\ne.g: \"SCHOOL-BUS\"",
+            "name": "vehicle_type",
             "in": "query"
           },
           {
-            "type": "string",
-            "x-go-name": "VehicleGroups",
-            "description": "VehicleGroups\n\nComma seperated list of vehicle group ids.\ne.g. \"1,3\"",
-            "name": "vehicle_groups",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "VehicleGroupID",
+            "description": "VehicleGroup\n\nVehicleGroup id to be filtered.\ne.g: 3",
+            "name": "vehicle_group_id",
             "in": "query"
           }
         ],
@@ -201,7 +202,8 @@
         "operationId": "CreateNewGroup",
         "parameters": [
           {
-            "name": "Ident",
+            "description": "Group",
+            "name": "Group",
             "in": "body",
             "required": true,
             "schema": {

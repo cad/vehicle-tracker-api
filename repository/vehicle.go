@@ -57,21 +57,16 @@ func GetAllVehicles () []Vehicle {
 }
 
 
-func FilterVehicles (types []string, groupids []uint) []Vehicle {
+func FilterVehicles (vehicleType string, groupID uint) []Vehicle {
 	var vehicles []Vehicle
 
-	q := db.Preload("Groups").Preload("Agent")
-
-	if len(types) > 1 {
-		q = q.Where("type in (?)", types)
-	} else if len(types) == 1 {
-		q = q.Where("type = ?", types[0])
+	q := db.Preload("Groups").Preload("Agent").Joins("JOIN vehicle_group ON vehicle_group.vehicle_id = vehicles.id")
+	if groupID != *new(uint) {
+		q = q.Where("vehicle_group.group_id = ?", groupID)
 	}
 
-	if len(groupids) > 1 {
-		q = q.Where("groupid in (?)", groupids)
-	} else if len(groupids) > 1 {
-		q = q.Where("groupid = ?", groupids[0])
+	if vehicleType != *new(string) {
+		q = q.Where("vehicles.type = ?", vehicleType)
 	}
 
 	q.Find(&vehicles)

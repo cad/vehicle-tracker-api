@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/cad/vehicle-tracker-api/repository"
-	"strings"
+	//"strings"
 	"strconv"
-//	"log"
+	//	"log"
+//	"fmt"
 )
 
 // VehicleResponse
@@ -103,56 +104,47 @@ func GetAllVehicles(w http.ResponseWriter, req *http.Request) {
 // swagger:parameters FilterVehicles
 type FilterVehiclesParams struct {
 
-	// VehicleTypes
+	// VehicleType
 	//
-	// Comma seperated list of vehicle types.
-	// e.g. "SCHOOL-BUS,SOLAR-CAR"
+	// VehicleType to be filtered.
+	// e.g: "SCHOOL-BUS"
+	//
 	//
 	// in: query
 	// required: false
-	VehicleTypes string `json:"vehicle_types"`
+	VehicleType string `json:"vehicle_type"`
 
-	// VehicleGroups
+	// VehicleGroup
 	//
-	// Comma seperated list of vehicle group ids.
-	// e.g. "1,3"
+	// VehicleGroup id to be filtered.
+	// e.g: 3
 	//
 	// in: query
 	// required: false
-	VehicleGroups string `json:"vehicle_groups"`
+	VehicleGroupID int `json:"vehicle_group_id"`
 
 }
 
 // swagger:route GET /vehicle/filter Vehicles FilterVehicles
-// Get all vehicles in the database.
+// Filter vehicles in the database.
 //
 //
 //   Responses:
 //     default: ErrorMsg
 //     200: VehicleSuccessVehiclesResponse
 func FilterVehicles(w http.ResponseWriter, req *http.Request) {
+	groupID, err := strconv.Atoi(req.URL.Query().Get("vehicle_group_id"))
+	if err != nil {
+		sendErrorMessage(w, "vehicle_group_id should be int", http.StatusBadRequest)
+		return
+
+	}
 	params := FilterVehiclesParams{
-		VehicleTypes: req.URL.Query().Get("vehicle_types"),
-		VehicleGroups: req.URL.Query().Get("vehicle_types"),
+		VehicleType: req.URL.Query().Get("vehicle_type"),
+		VehicleGroupID: groupID,
 	}
-	types := strings.Split(params.VehicleTypes, ",")
-	groups := strings.Split(params.VehicleGroups, ",")
-
-	var groupIDs []uint
-	index := 0
-	for _, element := range groups {
-		val, err := strconv.Atoi(element)
-		if err != nil {
-			//sendErrorMessage(w, err.Error(), http.StatusBadRequest)
-			continue
-		}
-		groupIDs[index] = uint(val)
-		index = index  + 1
-	}
-
 	var vehicles []repository.Vehicle
-
-	vehicles = repository.FilterVehicles(types, groupIDs)
+	vehicles = repository.FilterVehicles(params.VehicleType, uint(params.VehicleGroupID))
 
 	j, err := json.Marshal(vehicles)
 	checkErr(w, err)
@@ -346,9 +338,10 @@ func DeleteVehicle(w http.ResponseWriter, req *http.Request) {
 // swagger:parameters CreateNewGroup
 type CreateNewGroupParams struct {
 
-	// Ident represents the identity definition of the Group	       // in: body
+	// Group
+	// in: body
 	// required: true
-	Ident struct {
+	Group struct {
 
 		// Name
 		//
@@ -370,7 +363,7 @@ func CreateNewGroup(w http.ResponseWriter, req *http.Request) {
 
 	decoder := json.NewDecoder(req.Body)
 
-	if err := decoder.Decode(&params.Ident); err != nil {
+	if err := decoder.Decode(&params.Group); err != nil {
 		sendErrorMessage(w, "Error decoding the input", http.StatusBadRequest)
 		return
 	}
@@ -381,7 +374,7 @@ func CreateNewGroup(w http.ResponseWriter, req *http.Request) {
 	}
 
 	groupID, err := repository.CreateNewGroup(
-		params.Ident.Name,
+		params.Group.Name,
 	)
 
 	if err != nil  {

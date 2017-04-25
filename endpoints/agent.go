@@ -17,7 +17,7 @@ type GPSData struct {
 }
 
 // swagger:route GET /agent/ Agents GetAllAgents
-// List all the agents.
+// List all agents.
 //
 //
 //   Responses:

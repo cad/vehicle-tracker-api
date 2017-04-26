@@ -144,7 +144,7 @@ func TestDeleteUserEndpoint(t *testing.T) {
 	token, _ := user.RenewToken()
 
 	// Execute
-	req, _ := http.NewRequest("DELETE", "/user/user1@test.com", nil)
+	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/user/%s", user.UUID), nil)
 
 	// Authenticate
 	beforeCount := len(repository.GetAllUsers())

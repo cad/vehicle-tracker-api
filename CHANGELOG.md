@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.0.0](https://github.com/cad/vehicle-tracker-api/tree/v1.0.0) (2017-04-26)
+[Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v0.2.0...v1.0.0)
+
+**Implemented enhancements:**
+
+- Implement Authentication [\#8](https://github.com/cad/vehicle-tracker-api/issues/8)
+
 ## [v0.2.0](https://github.com/cad/vehicle-tracker-api/tree/v0.2.0) (2017-04-24)
 [Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v0.1.1...v0.2.0)
 

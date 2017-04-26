@@ -92,7 +92,6 @@ func GetVehicle(w http.ResponseWriter, req *http.Request) {
 func GetAllVehicles(w http.ResponseWriter, req *http.Request) {
 	var vehicles []repository.Vehicle
 	vehicles = repository.GetAllVehicles()
-//	log.Println("Vehicles: ", vehicles)
 
 	j, err := json.Marshal(vehicles)
 	checkErr(w, err)
@@ -188,6 +187,8 @@ type CreateNewVehicleParams struct {
 // swagger:route POST /vehicle/ Vehicles CreateNewVehicle
 // Create a new vehicle record.
 //
+//   Security:
+//       Bearer:
 //
 //   Responses:
 //     default: ErrorMsg
@@ -256,6 +257,8 @@ type VehicleSetAgentParams struct {
 // swagger:route POST /vehicle/{plate_id}/agent Vehicles VehicleSetAgent
 // Set vehicle agent.
 //
+//   Security:
+//       Bearer:
 //
 //   Responses:
 //     default: ErrorMsg
@@ -309,6 +312,8 @@ type DeleteVehicleParams struct {
 // Delete a vehicle.
 //
 //
+//   Security:
+//       Bearer:
 //   Responses:
 //     default: ErrorMsg
 //     200: VehicleSuccessVehicleResponse
@@ -353,6 +358,9 @@ type CreateNewGroupParams struct {
 
 // swagger:route POST /vehicle/group/ Vehicles CreateNewGroup
 // Create a new vehicle group.
+//
+//   Security:
+//       Bearer:
 //
 //
 //   Responses:

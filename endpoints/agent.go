@@ -31,6 +31,7 @@ func GetAllAgents(w http.ResponseWriter, req *http.Request) {
 	checkErr(w, err)
 	sendContentType(w, "application/json")
 	w.Write(j)
+
 }
 
 

@@ -23,7 +23,7 @@
         "tags": [
           "Agents"
         ],
-        "summary": "List all the agents.",
+        "summary": "List all agents.",
         "operationId": "GetAllAgents",
         "responses": {
           "200": {
@@ -71,6 +71,184 @@
         }
       }
     },
+    "/auth/": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "See if you are authenticated or not.",
+        "operationId": "CheckAuth",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AuthSuccessOKResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Get an `authorization_token`.",
+        "operationId": "Authorize",
+        "parameters": [
+          {
+            "description": "Data represents user's credentials",
+            "name": "Data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuthorizationRequestPayload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AuthSuccessTokenResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
+    "/user/": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get all Users.",
+        "operationId": "GetAllUsers",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UserSuccessUsersResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create a new user.",
+        "operationId": "CreateNewUser",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "description": "Ident represents the idetity definition of the User",
+            "name": "Data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "description": "Email",
+                  "type": "string",
+                  "x-go-name": "Email"
+                },
+                "password": {
+                  "description": "Password",
+                  "type": "string",
+                  "x-go-name": "Password"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UserSuccessUserResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
+    "/user/{uuid}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get a User by UUID.",
+        "operationId": "GetUser",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "UUID",
+            "description": "UUID",
+            "name": "uuid",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UserSuccessUserResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete a user.",
+        "operationId": "DeleteUser",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "UUID",
+            "description": "UUID",
+            "name": "uuid",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UserSuccessUserResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
     "/vehicle/": {
       "get": {
         "tags": [
@@ -93,6 +271,11 @@
         ],
         "summary": "Create a new vehicle record.",
         "operationId": "CreateNewVehicle",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "parameters": [
           {
             "description": "Ident represents the identity definition of the  Vehicle",
@@ -200,6 +383,11 @@
         ],
         "summary": "Create a new vehicle group.",
         "operationId": "CreateNewGroup",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "parameters": [
           {
             "description": "Group",
@@ -263,6 +451,11 @@
         ],
         "summary": "Delete a vehicle.",
         "operationId": "DeleteVehicle",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "parameters": [
           {
             "type": "string",
@@ -290,6 +483,11 @@
         ],
         "summary": "Set vehicle agent.",
         "operationId": "VehicleSetAgent",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "parameters": [
           {
             "type": "string",
@@ -360,6 +558,40 @@
       },
       "x-go-package": "github.com/cad/vehicle-tracker-api/repository"
     },
+    "AuthorizationCheckResponsePayload": {
+      "type": "object",
+      "properties": {
+        "authorized": {
+          "type": "boolean",
+          "x-go-name": "Authorized"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
+    },
+    "AuthorizationRequestPayload": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
+    },
+    "AuthorizationResponsePayload": {
+      "type": "object",
+      "properties": {
+        "authorization_token": {
+          "type": "string",
+          "x-go-name": "AuthorizationToken"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"
+    },
     "GPSData": {
       "type": "object",
       "properties": {
@@ -403,6 +635,23 @@
         "name": {
           "type": "string",
           "x-go-name": "Name"
+        }
+      },
+      "x-go-package": "github.com/cad/vehicle-tracker-api/repository"
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "updated_at": {
+          "x-go-name": "UpdatedAt"
+        },
+        "uuid": {
+          "type": "string",
+          "x-go-name": "UUID"
         }
       },
       "x-go-package": "github.com/cad/vehicle-tracker-api/repository"
@@ -454,10 +703,37 @@
     "AgentSuccessEmptyResponse": {
       "description": "Returns empty object"
     },
+    "AuthSuccessOKResponse": {
+      "description": "Returns ok if authenticated",
+      "schema": {
+        "$ref": "#/definitions/AuthorizationCheckResponsePayload"
+      }
+    },
+    "AuthSuccessTokenResponse": {
+      "description": "Returns a `authorization_token`",
+      "schema": {
+        "$ref": "#/definitions/AuthorizationResponsePayload"
+      }
+    },
     "ErrorMsg": {
       "description": "Generic Error",
       "schema": {
         "$ref": "#/definitions/GenericError"
+      }
+    },
+    "UserSuccessUserResponse": {
+      "description": "Returns a user",
+      "schema": {
+        "$ref": "#/definitions/User"
+      }
+    },
+    "UserSuccessUsersResponse": {
+      "description": "Returns list of users",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/User"
+        }
       }
     },
     "VehicleGroupsResponse": {
@@ -515,6 +791,13 @@
           "$ref": "#/definitions/Vehicle"
         }
       }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
     }
   }
 }

@@ -18,7 +18,14 @@ Build and static link
 `$ go build -ldflags "-linkmode external -extldflags -static" -o vehicle-tracker`
 
 ## Run
+
+### On First Run
+Create a user.
+
+`$ ./vehicle-tracker createsuperuser --email example@example.com --password 1234`
+
+### Start the api 
 Run
 
-`$ ./vehicle-tracker serve`
+`$ ./vehicle-tracker run`
 

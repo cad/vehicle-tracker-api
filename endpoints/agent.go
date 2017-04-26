@@ -17,7 +17,7 @@ type GPSData struct {
 }
 
 // swagger:route GET /agent/ Agents GetAllAgents
-// List all the agents.
+// List all agents.
 //
 //
 //   Responses:
@@ -31,6 +31,7 @@ func GetAllAgents(w http.ResponseWriter, req *http.Request) {
 	checkErr(w, err)
 	sendContentType(w, "application/json")
 	w.Write(j)
+
 }
 
 

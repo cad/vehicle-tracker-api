@@ -11,8 +11,26 @@ import (
 	"encoding/json"
 )
 
+func use(h http.HandlerFunc, middleware ...func(http.HandlerFunc) http.HandlerFunc) http.HandlerFunc {
+	for _, m := range middleware {
+		h = m(h)
+	}
+
+	return h
+}
+
 func GetRouter() http.Handler {
 	router := mux.NewRouter()
+
+	// Users
+	router.HandleFunc("/user/", use(GetAllUsers, TokenAuthMiddleware)).Methods("GET")
+	router.HandleFunc("/user/", use(CreateNewUser, TokenAuthMiddleware)).Methods("POST")
+	router.HandleFunc("/user/{email}", GetUser).Methods("GET")
+	router.HandleFunc("/user/{email}", use(DeleteUser, TokenAuthMiddleware)).Methods("DELETE")
+
+	// Auth
+	router.HandleFunc("/auth/", use(CheckAuth, TokenAuthMiddleware)).Methods("GET")
+	router.HandleFunc("/auth/", Authorize).Methods("POST")
 
 	// Agents
 	router.HandleFunc("/agent/", GetAllAgents).Methods("GET")
@@ -21,12 +39,12 @@ func GetRouter() http.Handler {
 	// Vehicles
 	router.HandleFunc("/vehicle/", GetAllVehicles).Methods("GET")
 	router.HandleFunc("/vehicle/filter", FilterVehicles).Methods("GET")
-	router.HandleFunc("/vehicle/", CreateNewVehicle).Methods("POST")
+	router.HandleFunc("/vehicle/", use(CreateNewVehicle, TokenAuthMiddleware)).Methods("POST")
 	router.HandleFunc("/vehicle/group/", GetAllGroups).Methods("GET")
-	router.HandleFunc("/vehicle/group/", CreateNewGroup).Methods("POST")
-	router.HandleFunc("/vehicle/{plate_id}/agent", VehicleSetAgent).Methods("POST")
+	router.HandleFunc("/vehicle/group/", use(CreateNewGroup, TokenAuthMiddleware)).Methods("POST")
+	router.HandleFunc("/vehicle/{plate_id}/agent", use(VehicleSetAgent, TokenAuthMiddleware)).Methods("POST")
 	router.HandleFunc("/vehicle/{plate_id}", GetVehicle).Methods("GET")
-	router.HandleFunc("/vehicle/{plate_id}", DeleteVehicle).Methods("DELETE")
+	router.HandleFunc("/vehicle/{plate_id}", use(DeleteVehicle, TokenAuthMiddleware)).Methods("DELETE")
 
 
 	dataFS, err := fs.New("/")

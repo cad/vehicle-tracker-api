@@ -2,7 +2,6 @@ package repository
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -145,7 +144,6 @@ func DeleteVehicleByPlateID (plateID string) error{
 		return err
 	}
 
-	log.Println(vehicle)
 	db.Delete(&vehicle)
 	return nil
 }

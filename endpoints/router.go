@@ -25,8 +25,8 @@ func GetRouter() http.Handler {
 	// Users
 	router.HandleFunc("/user/", use(GetAllUsers, TokenAuthMiddleware)).Methods("GET")
 	router.HandleFunc("/user/", use(CreateNewUser, TokenAuthMiddleware)).Methods("POST")
-	router.HandleFunc("/user/{email}", GetUser).Methods("GET")
-	router.HandleFunc("/user/{email}", use(DeleteUser, TokenAuthMiddleware)).Methods("DELETE")
+	router.HandleFunc("/user/{uuid}", GetUser).Methods("GET")
+	router.HandleFunc("/user/{uuid}", use(DeleteUser, TokenAuthMiddleware)).Methods("DELETE")
 
 	// Auth
 	router.HandleFunc("/auth/", use(CheckAuth, TokenAuthMiddleware)).Methods("GET")

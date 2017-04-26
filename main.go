@@ -3,13 +3,13 @@
 package main
 
 import (
-	"os"
-	"log"
 	"fmt"
-	"github.com/urfave/cli"
-	"github.com/cad/vehicle-tracker-api/server"
-	"github.com/cad/vehicle-tracker-api/repository"
 	"github.com/cad/vehicle-tracker-api/config"
+	"github.com/cad/vehicle-tracker-api/repository"
+	"github.com/cad/vehicle-tracker-api/server"
+	"github.com/urfave/cli"
+	"log"
+	"os"
 )
 
 func main() {
@@ -52,7 +52,7 @@ func main() {
 
 				email := c.String("email")
 				password := c.String("password")
-				repository.ConnectDB(config.C.DB.Type , config.C.DB.URL)
+				repository.ConnectDB(config.C.DB.Type, config.C.DB.URL)
 				user, err := repository.CreateNewUser(email, password)
 				if err != nil {
 					log.Fatal("Can not create user:", err.Error())
@@ -78,7 +78,6 @@ func main() {
 					Value: "1234",
 					Usage: "User's password",
 				},
-
 			},
 		},
 	}

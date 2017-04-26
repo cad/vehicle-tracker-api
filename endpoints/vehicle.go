@@ -92,7 +92,6 @@ func GetVehicle(w http.ResponseWriter, req *http.Request) {
 func GetAllVehicles(w http.ResponseWriter, req *http.Request) {
 	var vehicles []repository.Vehicle
 	vehicles = repository.GetAllVehicles()
-//	log.Println("Vehicles: ", vehicles)
 
 	j, err := json.Marshal(vehicles)
 	checkErr(w, err)

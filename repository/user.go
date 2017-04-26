@@ -4,18 +4,19 @@ import (
 	"fmt"
 	"log"
 	"time"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	_ "github.com/jinzhu/gorm/dialects/sqlite" // Force sqlite dialect to load
 	"gopkg.in/hlandau/passlib.v1"
 	"github.com/google/uuid"
 )
 
 type User struct {
 	ID        uint       `json:"-"     gorm:"primary_key"`
+	UUID     string     `json:"uuid" gorm:"not null;unique_index"`
 	CreatedAt time.Time  `json:"-"`
 	UpdatedAt time.Time  `json:"updated_at"`
 	DeletedAt *time.Time `json:"-"`
 
-	Email     string     `json:"email" gorm:"not null;unique_index"`
+	Email     string     `json:"email"`
 	Password  string     `json:"-"`
 	Token     string     `json:"-"`
 }
@@ -41,11 +42,11 @@ func (u *User) RenewToken() (string, error) {
 			Arg: u.Email,
 		}
 	}
-	uuid_token, err := uuid.NewRandom()
+	uuidToken, err := uuid.NewRandom()
 	if err != nil {
 		return "", err
 	}
-	u.Token = uuid_token.String()
+	u.Token = uuidToken.String()
 	db.Save(&u)
 	return u.Token, nil
 }
@@ -82,6 +83,20 @@ func CheckToken(token string) (bool) {
 	return true
 }
 
+func GetUserByUUID(uUID string) (User, error) {
+	var user User
+
+	db.Where(&User{UUID: uUID}).First(&user)
+	if db.NewRecord(&user) {
+		return user, UserError{
+			What: "User",
+			Type: "Not-Found",
+			Arg: uUID,
+		}
+	}
+	return user, nil
+}
+
 func GetUserByEmail(email string) (User, error) {
 	var user User
 
@@ -97,8 +112,13 @@ func GetUserByEmail(email string) (User, error) {
 }
 
 func CreateNewUser(email string, password string) (User, error) {
+	uUID, err := uuid.NewRandom()
 	user := User{
 		Email: email,
+		UUID: uUID.String(),
+	}
+	if err != nil {
+		return user, err
 	}
 	user.SetPassword(password)
 	db.Create(&user)
@@ -112,8 +132,8 @@ func CreateNewUser(email string, password string) (User, error) {
 	return user, nil
 }
 
-func DeleteUserByEmail(email string) (User, error) {
-	user, err := GetUserByEmail(email)
+func DeleteUserByUUID(uUID string) (User, error) {
+	user, err := GetUserByUUID(uUID)
 
 	if err != nil {
 		return user, err
@@ -123,7 +143,7 @@ func DeleteUserByEmail(email string) (User, error) {
 		return user, UserError{
 			What: "User",
 			Type: "Can-Not-Delete",
-			Arg: email,
+			Arg: uUID,
 		}
 	}
 

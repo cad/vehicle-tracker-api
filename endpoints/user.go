@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/cad/vehicle-tracker-api/repository"
-//	"log"
 )
 
 
@@ -45,15 +44,15 @@ func GetAllUsers(w http.ResponseWriter, req *http.Request) {
 // swagger:parameters GetUser
 type GetUserParams struct {
 
-	// Email
+	// UUID
 	// in: path
 	// required: true
-	Email string `json:"email"`
+	UUID string `json:"uuid"`
 
 }
 
-// swagger:route GET /user/{email} Users GetUser
-// Get a User by email address.
+// swagger:route GET /user/{uuid} Users GetUser
+// Get a User by UUID.
 //
 //   Security:
 //       Bearer:
@@ -62,8 +61,9 @@ type GetUserParams struct {
 //     default: ErrorMsg
 //     200: UserSuccessUserResponse
 func GetUser(w http.ResponseWriter, req *http.Request) {
-	params := GetUserParams{Email: mux.Vars(req)["email"]}
-	user, _ := repository.GetUserByEmail(params.Email)
+	params := GetUserParams{UUID: mux.Vars(req)["uuid"]}
+	//log.Println(params.UUID)
+	user, _ := repository.GetUserByUUID(params.UUID)
 	if user.ID == 0 {
 		sendErrorMessage(w, "Not found", 404)
 		return
@@ -133,20 +133,21 @@ func CreateNewUser(w http.ResponseWriter, req *http.Request) {
 	j, err := json.Marshal(user)
 	checkErr(w, err)
 	sendContentType(w, "application/json")
+	w.WriteHeader(201)
 	w.Write(j)
 }
 
 // swagger:parameters DeleteUser
 type DeleteUserParams struct {
 
-	// Email
+	// UUID
 	// in: path
 	// required: true
-	Email string `json:"email" validate:"required"`
+	UUID string `json:"uuid" validate:"required"`
 
 }
 
-// swagger:route DELETE /user/{email} Users DeleteUser
+// swagger:route DELETE /user/{uuid} Users DeleteUser
 // Delete a user.
 //
 //
@@ -157,9 +158,9 @@ type DeleteUserParams struct {
 //     default: ErrorMsg
 //     200: UserSuccessUserResponse
 func DeleteUser(w http.ResponseWriter, req *http.Request) {
-	params := DeleteUserParams{Email: mux.Vars(req)["email"]}
+	params := DeleteUserParams{UUID: mux.Vars(req)["uuid"]}
 
-	user, err := repository.DeleteUserByEmail(params.Email)
+	user, err := repository.DeleteUserByUUID(params.UUID)
 	if err != nil {
 		sendErrorMessage(w, "User to be deleted, can not be found", http.StatusNotFound)
 		return

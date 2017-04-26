@@ -57,7 +57,7 @@ func TestGetAllVehiclesEndpoint(t *testing.T) {
 	}
 
 	if vehicles[0].Agent.UUID != agent.UUID {
-		t.Error(errorMsg("Agent.UUID", fmt.Sprintf("%d", agent.UUID), fmt.Sprintf("%d", vehicles[0].Agent.UUID)))
+		t.Error(errorMsg("Agent.UUID", fmt.Sprintf("%s", agent.UUID), fmt.Sprintf("%s", vehicles[0].Agent.UUID)))
 		return
 	}
 
@@ -96,6 +96,8 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 		Type string `json:"type" valid:"required"`
 
 	}
+	user, _ := repository.CreateNewUser("test@test.com", "1234")
+	token, _ := user.RenewToken()
 
 	agent, _ := repository.CreateNewAgent("string")
 	groupID, _ := repository.CreateNewGroup("string")
@@ -105,14 +107,17 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 		Groups: []int{int(groupID)},
 		Type: "SCHOOL-BUS",
 	}
-	vehicle_json, err := json.Marshal(&vehicle)
+	vehicleJSON, err := json.Marshal(&vehicle)
 	if err != nil {
 		t.Error(errorMsg("Vehicle", "Marshallable", "NotMarshallable"))
 	}
-	body := bytes.NewBuffer(vehicle_json)
+	body := bytes.NewBuffer(vehicleJSON)
 
 	// Execute
 	req, _ := http.NewRequest("POST", "/vehicle/", body)
+	// Authenticate
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
@@ -176,7 +181,7 @@ func TestGetVehicleEndpoint(t *testing.T) {
 	}
 
 	if vehicle.Agent.UUID != agent.UUID {
-		t.Error(errorMsg("Agent.UUID", fmt.Sprintf("%d", agent.UUID), fmt.Sprintf("%d", vehicle.Agent.UUID)))
+		t.Error(errorMsg("Agent.UUID", fmt.Sprintf("%s", agent.UUID), fmt.Sprintf("%s", vehicle.Agent.UUID)))
 		return
 	}
 
@@ -192,6 +197,8 @@ func TestDeleteVehicleEndpoint(t *testing.T) {
 	defer os.Remove("/tmp/test.db")
 
 	// Prepare
+	user, _ := repository.CreateNewUser("test@test.com", "1234")
+	token, _ := user.RenewToken()
 	agent, _ := repository.CreateNewAgent("string")
 	groupID, _ := repository.CreateNewGroup("string")
 	_ = repository.CreateVehicle(
@@ -204,6 +211,9 @@ func TestDeleteVehicleEndpoint(t *testing.T) {
 
 	// Execute
 	req, _ := http.NewRequest("DELETE", "/vehicle/test", nil)
+	// Authenticate
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
@@ -228,6 +238,8 @@ func TestSetVehicleAgentEndpoint(t *testing.T) {
 	defer os.Remove("/tmp/test.db")
 
 	// Prepare
+	user, _ := repository.CreateNewUser("test@test.com", "1234")
+	token, _ := user.RenewToken()
 
 	agent, _ := repository.CreateNewAgent("string")
 	groupID, _ := repository.CreateNewGroup("string")
@@ -246,14 +258,18 @@ func TestSetVehicleAgentEndpoint(t *testing.T) {
 			UUID: newAgent.UUID,
 		},
 	}
-	vehicle_json, err := json.Marshal(&params.Agent)
+	vehicleJSON, err := json.Marshal(&params.Agent)
 	if err != nil {
 		t.Error(errorMsg("Vehicle", "Marshallable", "NotMarshallable"))
 	}
-	body := bytes.NewBuffer(vehicle_json)
+	body := bytes.NewBuffer(vehicleJSON)
 
 	// Execute
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/vehicle/%s/agent", params.PlateID), body)
+	// Authenticate
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
@@ -316,8 +332,6 @@ func TestFilterVehicleEndpoint(t *testing.T) {
 		t.Error(errorMsg("Vehicle", "Unmarshallable", "NotUnmarshallable"))
 		return
 	}
-	fmt.Println(res.Body.String(), newGroupID)
-	fmt.Printf("/vehicle/filter?vehicle_groups=%d", newGroupID)
 	if vehicles[0].Groups[0].ID != newGroupID {
 		t.Error(errorMsg("Vehicle", fmt.Sprintf("%d", newGroupID), fmt.Sprintf("%d", vehicles[0].Groups[0].ID)))
 		return
@@ -332,20 +346,27 @@ func TestCreateVehicleGroupEndpoint(t *testing.T) {
 	defer os.Remove("/tmp/test.db")
 
 	// Prepare
+	user, _ := repository.CreateNewUser("test@test.com", "1234")
+	token, _ := user.RenewToken()
+
 	params := CreateNewGroupParams{
 		Group: struct {
 			Name string `json:"name" valid:"required"`
 		}{Name: "string"},
 	}
 	_, _ = repository.CreateNewAgent("string")
-	payload_json, err := json.Marshal(&params.Group)
+	payloadJSON, err := json.Marshal(&params.Group)
 	if err != nil {
 		t.Error(errorMsg("Vehicle", "Marshallable", "NotMarshallable"))
 	}
-	body := bytes.NewBuffer(payload_json)
+	body := bytes.NewBuffer(payloadJSON)
 
 	// Execute
 	req, _ := http.NewRequest("POST", "/vehicle/group/", body)
+
+	// Authenticate
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
@@ -410,7 +431,7 @@ func TestGetAllVehicleGroupsEndpoint(t *testing.T) {
 	}
 
 	if createdGroups[0].Name != groups[0].Name {
-		t.Error(errorMsg("createdGroups[0].Name", fmt.Sprintf("%d", groups[0].Name), fmt.Sprintf("%d",createdGroups[0].Name)))
+		t.Error(errorMsg("createdGroups[0].Name", fmt.Sprintf("%s", groups[0].Name), fmt.Sprintf("%s",createdGroups[0].Name)))
 		return
 	}
 

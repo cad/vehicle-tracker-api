@@ -43,7 +43,7 @@ func TokenAuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 
 
 type AuthorizationRequestPayload struct {
-	Email string `json:"email" valid:"email"`
+	Email string `json:"uuid" valid:"email"`
 	Password string `json:"password"`
 }
 

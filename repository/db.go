@@ -16,6 +16,7 @@ func ConnectDB(dbType string, dbURL string) {
 		panic("failed to connect database")
 	}
 	db.AutoMigrate(
+		&User{},
 		&Vehicle{},
 		&Agent{},
 		&Group{},

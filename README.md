@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/cad/vehicle-tracker-api.svg?branch=master)](https://travis-ci.org/cad/vehicle-tracker-api)
 # vehicle-tracker-api
 
 ## Get dependencies

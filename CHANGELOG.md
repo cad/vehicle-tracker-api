@@ -1,5 +1,16 @@
 # Change Log
 
+## [v1.1.0](https://github.com/cad/vehicle-tracker-api/tree/v1.1.0) (2017-04-27)
+[Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.0.0...v1.1.0)
+
+**Implemented enhancements:**
+
+- Write event subsystem [\#11](https://github.com/cad/vehicle-tracker-api/issues/11)
+
+**Closed issues:**
+
+- Write websocket handler [\#10](https://github.com/cad/vehicle-tracker-api/issues/10)
+
 ## [v1.0.0](https://github.com/cad/vehicle-tracker-api/tree/v1.0.0) (2017-04-26)
 [Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v0.2.0...v1.0.0)
 
@@ -35,6 +46,3 @@
 
 - Write docs [\#2](https://github.com/cad/vehicle-tracker-api/issues/2)
 - Write unit tests [\#1](https://github.com/cad/vehicle-tracker-api/issues/1)
-
-
-

@@ -7,6 +7,7 @@ import (
 	"github.com/cad/vehicle-tracker-api/endpoints"
 	"github.com/cad/vehicle-tracker-api/config"
 	"github.com/cad/vehicle-tracker-api/repository"
+	"github.com/cad/vehicle-tracker-api/event"
 	"fmt"
 	"os"
 	"github.com/gorilla/handlers"
@@ -33,7 +34,8 @@ func ExecuteServer(configPath string) {
 	router := GetServer()
 	router = handlers.LoggingHandler(os.Stdout, router)
 	fmt.Println("API server version", config.VERSION, "is listening on port", config.C.Server.Port)
+	event.Run()
 	log.Fatal(http.ListenAndServe(config.C.Server.Port, router))
-
+	defer event.Shutdown()
 	defer repository.CloseDB()
 }

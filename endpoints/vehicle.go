@@ -2,13 +2,15 @@ package endpoints
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	valid "github.com/asaskevich/govalidator"
 	"net/http"
 	"encoding/json"
 	"github.com/cad/vehicle-tracker-api/repository"
+	"github.com/cad/vehicle-tracker-api/event"
 	//"strings"
 	"strconv"
-	//	"log"
+	"log"
 //	"fmt"
 )
 
@@ -149,6 +151,110 @@ func FilterVehicles(w http.ResponseWriter, req *http.Request) {
 	checkErr(w, err)
 	sendContentType(w, "application/json")
 	w.Write(j)
+}
+
+var upgrader = websocket.Upgrader{} // use default options
+
+// swagger:parameters FilterVehiclesWS
+type FilterVehiclesWSParams struct {
+
+	// VehicleType
+	//
+	// VehicleType to be filtered.
+	// e.g: "SCHOOL-BUS"
+	//
+	//
+	// in: query
+	// required: false
+	VehicleType string `json:"vehicle_type"`
+
+	// VehicleGroup
+	//
+	// VehicleGroup id to be filtered.
+	// e.g: 3
+	//
+	// in: query
+	// required: false
+	VehicleGroupID int `json:"vehicle_group_id"`
+
+}
+
+// swagger:route GET /ws/vehicle/filter WebSocket FilterVehiclesWS
+// WebSocket Endpoint for filter vehicles.
+//
+// e.g. wss://api.vehicles.neu.edu.tr/ws/vehicle/filter?vehicle_type=SCHOOL-BUS&vehicle_group_id=2
+//
+//   Responses:
+//     200: VehicleSuccessVehicleResponse
+//
+func FilterVehiclesWS(w http.ResponseWriter, req *http.Request) {
+	groupID, err := strconv.Atoi(req.URL.Query().Get("vehicle_group_id"))
+	if err != nil {
+		sendErrorMessage(w, "vehicle_group_id should be int", http.StatusBadRequest)
+		return
+
+	}
+	params := FilterVehiclesParams{
+		VehicleType: req.URL.Query().Get("vehicle_type"),
+		VehicleGroupID: groupID,
+	}
+
+	c, err := upgrader.Upgrade(w, req, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+	newAgentEvent := event.MakeKind(repository.NEW_AGENT)
+	handler := func (e *event.Event){
+		agent, ok := e.Payload.(repository.Agent)
+		if !ok {
+			log.Println("Cannot assert type Agent. Ignoring.")
+			return
+		}
+
+		vehicle, err := repository.GetVehicleByAgentUUID(agent.UUID)
+		if err != nil {
+			// Ignore update
+			log.Printf("(%s)", err.Error())
+			log.Println("[WS-EXPORT] Vehicle not found for the Agent streamed from channel. Ignoring.", "Agent.UUID", agent.UUID)
+			return
+		}
+		if params.VehicleType != "" && vehicle.Type != params.VehicleType {
+			// Ignore update
+			return
+		}
+
+		found := false
+		for _, group := range vehicle.Groups {
+			if group.ID == uint(params.VehicleGroupID) {
+				found = true
+			}
+		}
+		if found != true {
+			// Ignore update
+			return
+		}
+
+		err = c.WriteJSON(vehicle)
+		if err != nil {
+			log.Println("[WS-EXPORT] Can't write to WS Connection!. Ignoring.")
+			return
+		}
+	}
+	newAgentEvent.Register(&handler)
+	defer newAgentEvent.UnRegister(&handler)
+
+	for {
+		_, _, err := c.ReadMessage()
+		if err != nil {
+			log.Println("Client disconnected")
+			break
+		}
+	}
+
+
+
 }
 
 

@@ -5,8 +5,10 @@ import (
 //	"log"
 	"time"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/cad/vehicle-tracker-api/event"
 
 )
+const NEW_AGENT = "NEW-AGENT"
 
 type Agent struct {
 	ID        uint       `json:"-"    gorm:"primary_key"`
@@ -34,15 +36,14 @@ func GetAgentByUUID(uUID string) (Agent, error) {
 	var agent Agent
 
 	db.Where(&Agent{UUID: uUID}).First(&agent)
-	if agent != (Agent{}) {
-		return agent, nil
+	if db.NewRecord(&agent) {
+		return agent, AgentError{
+			What: "Agent",
+			Type: "Not-Found",
+			Arg: uUID,
+		}
 	}
-
-	return agent, AgentError{
-		What: "Agent",
-		Type: "Not-Found",
-		Arg: uUID,
-	}
+	return agent, nil
 }
 
 func CreateNewAgent(uUID string) (Agent, error) {
@@ -87,6 +88,9 @@ func SyncAgentByUUID(uUID string, lat string, lon string, ts string) error {
 	agent.Lon = lon
 	agent.TS = ts
 	db.Save(&agent)
+	newAgentEvent := event.MakeKind(NEW_AGENT)
+	newAgentEvent.Emit(agent)
+
 	return nil
 }
 

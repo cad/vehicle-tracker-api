@@ -46,6 +46,20 @@ func GetVehicleByPlateID (plateID string) (Vehicle, error) {
 	return vehicle, &VehicleError{What: "Vehicle", Type: "Not-Found", Arg: plateID}
 }
 
+func GetVehicleByAgentUUID (agentUUID string) (Vehicle, error) {
+	var vehicle Vehicle
+	agent, err := GetAgentByUUID(agentUUID)
+	if err != nil {
+		return vehicle, err
+	}
+
+	db.Preload("Groups").Preload("Agent").Where(&Vehicle{AgentID: agent.ID}).First(&vehicle)
+
+	if db.NewRecord(&vehicle) {
+		return vehicle, &VehicleError{What: "Vehicle.Agent", Type: "Not-Found", Arg: agentUUID}
+	}
+	return vehicle, nil
+}
 
 func GetAllVehicles () []Vehicle {
 	var vehicles []Vehicle

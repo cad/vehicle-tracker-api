@@ -526,6 +526,38 @@
           }
         }
       }
+    },
+    "/ws/vehicle/filter": {
+      "get": {
+        "description": "e.g. wss://api.vehicles.neu.edu.tr/ws/vehicle/filter?vehicle_type=SCHOOL-BUS\u0026vehicle_group_id=2",
+        "tags": [
+          "WebSocket"
+        ],
+        "summary": "WebSocket Endpoint for filter vehicles.",
+        "operationId": "FilterVehiclesWS",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "VehicleType",
+            "description": "VehicleType\n\nVehicleType to be filtered.\ne.g: \"SCHOOL-BUS\"",
+            "name": "vehicle_type",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "VehicleGroupID",
+            "description": "VehicleGroup\n\nVehicleGroup id to be filtered.\ne.g: 3",
+            "name": "vehicle_group_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehicleResponse"
+          }
+        }
+      }
     }
   },
   "definitions": {

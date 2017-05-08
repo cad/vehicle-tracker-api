@@ -15,7 +15,6 @@
     "title": "Vehicle Tracker API",
     "termsOfService": "https://api.vehicles.neu.edu.tr/"
   },
-  "host": "api.vehicles.neu.edu.tr",
   "basePath": "/",
   "paths": {
     "/agent/": {

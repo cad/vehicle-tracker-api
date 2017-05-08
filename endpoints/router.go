@@ -35,6 +35,7 @@ func GetRouter() http.Handler {
 	// Agents
 	router.HandleFunc("/agent/", GetAllAgents).Methods("GET")
 	router.HandleFunc("/agent/{uuid}/sync", SyncAgent).Methods("POST")
+	router.HandleFunc("/agents/{uuid}/sync", SyncAgent).Methods("POST")  // NOTE(cad): this line added for backwards compatibility
 
 	// Vehicles
 	router.HandleFunc("/vehicle/", GetAllVehicles).Methods("GET")

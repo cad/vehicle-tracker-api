@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-const VERSION = "1.1.0"
+const VERSION = "1.1.1"
 
 type Configuration struct {
 	DB DBParams `json:"db`
@@ -20,7 +20,6 @@ type DBParams struct {
 
 type ServerParams struct {
 	Port string `json:"port"`
-	Host string `json:"host"`
 }
 
 var C Configuration

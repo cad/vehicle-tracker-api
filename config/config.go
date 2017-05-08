@@ -20,7 +20,6 @@ type DBParams struct {
 
 type ServerParams struct {
 	Port string `json:"port"`
-	Host string `json:"host"`
 }
 
 var C Configuration

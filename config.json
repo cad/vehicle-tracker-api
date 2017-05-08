@@ -4,7 +4,6 @@
         "url": "data/devel.db"
     },
     "server": {
-        "port": ":5004",
-        "host": "api.vehicles.neu.edu.tr"
-    }
+        "port": ":5004"
+     }
 }

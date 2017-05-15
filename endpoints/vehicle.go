@@ -424,7 +424,7 @@ type DeleteVehicleParams struct {
 //     default: ErrorMsg
 //     200: VehicleSuccessVehicleResponse
 func DeleteVehicle(w http.ResponseWriter, req *http.Request) {
-	params := DeleteVehicleParams{PlateID: mux.Vars(req)["PlateID"]}
+	params := DeleteVehicleParams{PlateID: mux.Vars(req)["plate_id"]}
 
 	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
 	if err != nil {

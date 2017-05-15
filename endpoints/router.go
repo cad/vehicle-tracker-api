@@ -22,30 +22,35 @@ func use(h http.HandlerFunc, middleware ...func(http.HandlerFunc) http.HandlerFu
 func GetRouter() http.Handler {
 	router := mux.NewRouter()
 
+	// Apply CORS to all preflight (OPTIONS) request.
+	router.Methods("OPTIONS").HandlerFunc( func(w http.ResponseWriter, r *http.Request){
+		doCORS(w, r)
+	})
+
 	// Users
-	router.HandleFunc("/user/", use(GetAllUsers, TokenAuthMiddleware)).Methods("GET")
-	router.HandleFunc("/user/", use(CreateNewUser, TokenAuthMiddleware)).Methods("POST")
-	router.HandleFunc("/user/{uuid}", GetUser).Methods("GET")
-	router.HandleFunc("/user/{uuid}", use(DeleteUser, TokenAuthMiddleware)).Methods("DELETE")
+	router.HandleFunc("/user/", use(GetAllUsers, TokenAuthMiddleware, CORSMiddleware)).Methods("GET")
+	router.HandleFunc("/user/", use(CreateNewUser, TokenAuthMiddleware, CORSMiddleware)).Methods("POST")
+	router.HandleFunc("/user/{uuid}", use(GetUser, CORSMiddleware)).Methods("GET")
+	router.HandleFunc("/user/{uuid}", use(DeleteUser, TokenAuthMiddleware, CORSMiddleware)).Methods("DELETE")
 
 	// Auth
-	router.HandleFunc("/auth/", use(CheckAuth, TokenAuthMiddleware)).Methods("GET")
-	router.HandleFunc("/auth/", Authorize).Methods("POST")
+	router.HandleFunc("/auth/", use(CheckAuth, TokenAuthMiddleware, CORSMiddleware)).Methods("GET")
+	router.HandleFunc("/auth/", use(Authorize, CORSMiddleware)).Methods("POST")
 
 	// Agents
-	router.HandleFunc("/agent/", GetAllAgents).Methods("GET")
-	router.HandleFunc("/agent/{uuid}/sync", SyncAgent).Methods("POST")
-	router.HandleFunc("/agents/{uuid}/sync", SyncAgent).Methods("POST")  // NOTE(cad): this line added for backwards compatibility
+	router.HandleFunc("/agent/", use(GetAllAgents, CORSMiddleware)).Methods("GET")
+	router.HandleFunc("/agent/{uuid}/sync", use(SyncAgent, CORSMiddleware)).Methods("POST")
+	router.HandleFunc("/agents/{uuid}/sync", use(SyncAgent, CORSMiddleware)).Methods("POST")  // NOTE(cad): this line added for backwards compatibility
 
 	// Vehicles
-	router.HandleFunc("/vehicle/", GetAllVehicles).Methods("GET")
-	router.HandleFunc("/vehicle/filter", FilterVehicles).Methods("GET")
-	router.HandleFunc("/vehicle/", use(CreateNewVehicle, TokenAuthMiddleware)).Methods("POST")
-	router.HandleFunc("/vehicle/group/", GetAllGroups).Methods("GET")
-	router.HandleFunc("/vehicle/group/", use(CreateNewGroup, TokenAuthMiddleware)).Methods("POST")
-	router.HandleFunc("/vehicle/{plate_id}/agent", use(VehicleSetAgent, TokenAuthMiddleware)).Methods("POST")
-	router.HandleFunc("/vehicle/{plate_id}", GetVehicle).Methods("GET")
-	router.HandleFunc("/vehicle/{plate_id}", use(DeleteVehicle, TokenAuthMiddleware)).Methods("DELETE")
+	router.HandleFunc("/vehicle/", use(GetAllVehicles, CORSMiddleware)).Methods("GET")
+	router.HandleFunc("/vehicle/filter", use(FilterVehicles, CORSMiddleware)).Methods("GET")
+	router.HandleFunc("/vehicle/", use(CreateNewVehicle, TokenAuthMiddleware, CORSMiddleware)).Methods("POST")
+	router.HandleFunc("/vehicle/group/", use(GetAllGroups, CORSMiddleware)).Methods("GET")
+	router.HandleFunc("/vehicle/group/", use(CreateNewGroup, TokenAuthMiddleware, CORSMiddleware)).Methods("POST")
+	router.HandleFunc("/vehicle/{plate_id}/agent", use(VehicleSetAgent, TokenAuthMiddleware, CORSMiddleware)).Methods("POST")
+	router.HandleFunc("/vehicle/{plate_id}", use(GetVehicle, CORSMiddleware)).Methods("GET")
+	router.HandleFunc("/vehicle/{plate_id}", use(DeleteVehicle, TokenAuthMiddleware, CORSMiddleware)).Methods("DELETE")
 
 	// WebSocket
 	router.HandleFunc("/ws/vehicle/filter", FilterVehiclesWS).Methods("GET")

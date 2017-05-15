@@ -20,7 +20,6 @@ type Vehicle struct {
 	ID        uint       `json:"-"           gorm:"primary_key"`
 	CreatedAt time.Time  `json:"-"`
 	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"-"`
 	PlateID   string     `json:"plate_id"    gorm:"not null;unique_index"`
 	Agent     Agent      `json:"agent"       gorm:"not null;ForeignKey:AgentID"`
 	AgentID   uint       `json:"-"`

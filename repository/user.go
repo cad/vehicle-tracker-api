@@ -14,7 +14,6 @@ type User struct {
 	UUID     string     `json:"uuid" gorm:"unique_index"`
 	CreatedAt time.Time  `json:"-"`
 	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"-"`
 
 	Email     string     `json:"email"`
 	Password  string     `json:"-"`

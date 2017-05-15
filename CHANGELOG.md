@@ -1,5 +1,15 @@
 # Change Log
 
+## [v1.1.2](https://github.com/cad/vehicle-tracker-api/tree/v1.1.2) (2017-05-15)
+[Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.1.1...v1.1.2)
+
+**Closed issues:**
+
+- CORS headers are missing [\#12](https://github.com/cad/vehicle-tracker-api/issues/12)
+
+## [v1.1.1](https://github.com/cad/vehicle-tracker-api/tree/v1.1.1) (2017-05-08)
+[Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.1.0...v1.1.1)
+
 ## [v1.1.0](https://github.com/cad/vehicle-tracker-api/tree/v1.1.0) (2017-04-27)
 [Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.0.0...v1.1.0)
 

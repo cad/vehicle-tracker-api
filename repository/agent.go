@@ -15,7 +15,6 @@ type Agent struct {
 	UUID      string     `json:"uuid" gorm:"not null;unique_index"`
 	CreatedAt time.Time  `json:"-"`
 	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"-"`
 
 	Label     string     `json:"label"`
 

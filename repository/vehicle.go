@@ -38,6 +38,9 @@ type Group struct {
 
 func GetVehicleByPlateID (plateID string) (Vehicle, error) {
 	var vehicle Vehicle
+	if plateID == "" {
+		return vehicle, &VehicleError{What: "plateID", Type: "Empty", Arg: plateID}
+	}
 	db.Preload("Groups").Preload("Agent").Where(&Vehicle{PlateID: plateID}).First(&vehicle)
 	if vehicle.ID != 0 {
 		return vehicle, nil
@@ -47,6 +50,9 @@ func GetVehicleByPlateID (plateID string) (Vehicle, error) {
 
 func GetVehicleByAgentUUID (agentUUID string) (Vehicle, error) {
 	var vehicle Vehicle
+	if agentUUID == "" {
+		return vehicle, &VehicleError{What: "agentUUID", Type: "Empty", Arg: agentUUID}
+	}
 	agent, err := GetAgentByUUID(agentUUID)
 	if err != nil {
 		return vehicle, err
@@ -101,6 +107,9 @@ func VehicleSetAgent(plateID,uUID string) error {
 }
 
 func CreateVehicle (plateID string, agentUUID string, groupIDs []int, vehicleType string) error {
+	if plateID == "" {
+		return &VehicleError{What: "plateID", Type: "Empty", Arg: plateID}
+	}
 	groups := make([]Group, 0)
 	// Sanitize incoming
 	for _, item := range groupIDs {

@@ -33,6 +33,9 @@ func GetAllAgents () []Agent {
 
 func GetAgentByUUID(uUID string) (Agent, error) {
 	var agent Agent
+	if uUID == "" {
+		return agent, &AgentError{What: "uUID", Type: "Empty", Arg: uUID}
+	}
 
 	db.Where(&Agent{UUID: uUID}).First(&agent)
 	if db.NewRecord(&agent) {
@@ -46,7 +49,11 @@ func GetAgentByUUID(uUID string) (Agent, error) {
 }
 
 func CreateNewAgent(uUID string) (Agent, error) {
-	agent := Agent{
+	var agent Agent
+	if uUID == "" {
+		return agent, &AgentError{What: "uUID", Type: "Empty", Arg: uUID}
+	}
+	agent = Agent{
 		UUID: uUID,
 	}
 	db.Create(&agent)

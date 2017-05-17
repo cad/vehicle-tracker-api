@@ -1,5 +1,12 @@
 # Change Log
 
+## [v1.1.3](https://github.com/cad/vehicle-tracker-api/tree/v1.1.3) (2017-05-17)
+[Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.1.2...v1.1.3)
+
+**Fixed bugs:**
+
+- empty input causes random entry from db to be deleted [\#13](https://github.com/cad/vehicle-tracker-api/issues/13)
+
 ## [v1.1.2](https://github.com/cad/vehicle-tracker-api/tree/v1.1.2) (2017-05-15)
 [Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.1.1...v1.1.2)
 
@@ -56,3 +63,6 @@
 
 - Write docs [\#2](https://github.com/cad/vehicle-tracker-api/issues/2)
 - Write unit tests [\#1](https://github.com/cad/vehicle-tracker-api/issues/1)
+
+
+

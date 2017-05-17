@@ -230,6 +230,48 @@ func TestDeleteVehicleEndpoint(t *testing.T) {
 	}
 }
 
+// Test Delete Vehicle with empty input
+// Ensure BUG #13 does not regress.
+func TestDeleteVehicleEndpointEmptyInput(t *testing.T) {
+	// Init
+	repository.ConnectDB("sqlite3", "/tmp/test.db")
+	defer repository.CloseDB()
+	defer os.Remove("/tmp/test.db")
+
+	// Prepare
+	user, _ := repository.CreateNewUser("test@test.com", "1234")
+	token, _ := user.RenewToken()
+	agent, _ := repository.CreateNewAgent("string")
+	groupID, _ := repository.CreateNewGroup("string")
+	_ = repository.CreateVehicle(
+		"test",
+		agent.UUID,
+		[]int{int(groupID)},
+		"SCHOOL-BUS",
+	)
+
+
+	// Execute
+	req, _ := http.NewRequest("DELETE", "/vehicle/+", nil)
+	// Authenticate
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	res := httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	if res.Code != 404 {
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
+		return
+	}
+
+	vehicles := repository.GetAllVehicles()
+	if len(vehicles) <= 0 {
+		t.Error(errorMsg("len(vehicles)", "> 0", fmt.Sprintf("%d", len(vehicles))))
+		return
+	}
+}
+
 // Test Set Agent
 func TestSetVehicleAgentEndpoint(t *testing.T) {
 	// Init

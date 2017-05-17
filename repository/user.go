@@ -73,6 +73,11 @@ func (u *User) CheckPassword(password string) (bool) {
 }
 
 func CheckToken(token string) (bool) {
+	if token == "" {
+		// TODO(cad): Write a log about what happened here.
+		return false
+	}
+
 	var user User
 	db.Where(&User{Token: token}).First(&user)
 	if db.NewRecord(&user) {
@@ -84,6 +89,9 @@ func CheckToken(token string) (bool) {
 
 func GetUserByUUID(uUID string) (User, error) {
 	var user User
+	if uUID == "" {
+		return user, &UserError{What: "uUID", Type: "Empty", Arg: uUID}
+	}
 
 	db.Where(&User{UUID: uUID}).First(&user)
 	if db.NewRecord(&user) {
@@ -98,6 +106,9 @@ func GetUserByUUID(uUID string) (User, error) {
 
 func GetUserByEmail(email string) (User, error) {
 	var user User
+	if email == "" {
+		return user, &UserError{What: "email", Type: "Empty", Arg: email}
+	}
 
 	db.Where(&User{Email: email}).First(&user)
 	if db.NewRecord(&user) {
@@ -111,8 +122,13 @@ func GetUserByEmail(email string) (User, error) {
 }
 
 func CreateNewUser(email string, password string) (User, error) {
+	var user User
+	if email == "" || password == "" {
+		return user, &UserError{What: "EmailOrPassword", Type: "Empty", Arg: ""}
+	}
+
 	uUID, err := uuid.NewRandom()
-	user := User{
+	user = User{
 		Email: email,
 		UUID: uUID.String(),
 	}

@@ -53,7 +53,7 @@ func GetRouter() http.Handler {
 	router.HandleFunc("/vehicle/{plate_id}", use(DeleteVehicle, TokenAuthMiddleware, CORSMiddleware)).Methods("DELETE")
 
 	// WebSocket
-	router.HandleFunc("/ws/vehicle/filter", FilterVehiclesWS).Methods("GET")
+	router.HandleFunc("/ws/vehicle/filter", use(FilterVehiclesWS, CORSMiddleware)).Methods("GET")
 
 	dataFS, err := fs.New("/")
 	if err != nil {

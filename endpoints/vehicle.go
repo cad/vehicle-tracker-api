@@ -153,7 +153,11 @@ func FilterVehicles(w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
-var upgrader = websocket.Upgrader{} // use default options
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 
 // swagger:parameters FilterVehiclesWS
 type FilterVehiclesWSParams struct {

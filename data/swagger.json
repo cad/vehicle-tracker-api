@@ -612,6 +612,9 @@
         "authorized": {
           "type": "boolean",
           "x-go-name": "Authorized"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
         }
       },
       "x-go-package": "github.com/cad/vehicle-tracker-api/endpoints"

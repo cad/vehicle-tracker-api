@@ -1,16 +1,16 @@
 package endpoints
 
-import (
-	//"github.com/cad/vehicle-tracker-api/repository"
-)
+import "github.com/cad/vehicle-tracker-api/repository"
+
+//"github.com/cad/vehicle-tracker-api/repository"
 
 type AuthorizationResponsePayload struct {
 	AuthorizationToken string `json:"authorization_token"`
 }
 
 type AuthorizationCheckResponsePayload struct {
-	Authorized bool `json:"authorized"`
-
+	Authorized bool            `json:"authorized"`
+	User       repository.User `json:"user"`
 }
 
 // Returns a `authorization_token`

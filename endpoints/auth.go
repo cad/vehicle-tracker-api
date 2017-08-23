@@ -109,7 +109,22 @@ func Authorize(w http.ResponseWriter, req *http.Request) {
 //     default: ErrorMsg
 //     200: AuthSuccessOKResponse
 func CheckAuth(w http.ResponseWriter, req *http.Request) {
-	payload := AuthorizationCheckResponsePayload{Authorized: true}
+	uuid, ok := UUIDFromContext(req.Context())
+	if !ok {
+		sendErrorMessage(w, "Can't get uuid from token", 500)
+		return
+	}
+
+	user, _ := repository.GetUserByUUID(uuid)
+	if user.ID == 0 {
+		sendErrorMessage(w, "Not found", 404)
+		return
+	}
+
+	payload := AuthorizationCheckResponsePayload{
+		Authorized: true,
+		User:       user,
+	}
 	j, err := json.Marshal(payload)
 	checkErr(w, err)
 	sendContentType(w, "application/json")

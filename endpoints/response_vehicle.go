@@ -4,7 +4,6 @@ import (
 	"github.com/cad/vehicle-tracker-api/repository"
 )
 
-
 // Returns a vehicle
 // swagger:response
 type VehicleSuccessVehicleResponse struct {
@@ -13,14 +12,12 @@ type VehicleSuccessVehicleResponse struct {
 	Body repository.Vehicle
 }
 
-
 // Returns list of vehicles
 // swagger:response
 type VehicleSuccessVehiclesResponse struct {
 	// Vehicles
 	// in: body
 	Body []repository.Vehicle
-
 }
 
 // Returns a vehicle group
@@ -37,5 +34,12 @@ type VehicleSuccessVehicleGroupsResponse struct {
 	// Vehicles
 	// in: body
 	Body []repository.Group
+}
 
+// Returns list of vehicle types
+// swagger:response
+type VehicleSuccessVehicleTypesResponse struct {
+	// Vehicle types
+	// in: body
+	Body []string
 }

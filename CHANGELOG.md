@@ -1,5 +1,20 @@
 # Change Log
 
+## [v0.1.5](https://github.com/cad/vehicle-tracker-api/tree/v0.1.5) (2017-08-24)
+[Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.1.4...v0.1.5)
+
+**Implemented enhancements:**
+
+- write an endpoint for system defined vehicle types [\#17](https://github.com/cad/vehicle-tracker-api/issues/17)
+- Authenticated user credentials [\#15](https://github.com/cad/vehicle-tracker-api/issues/15)
+
+**Fixed bugs:**
+
+- User can remove himself [\#14](https://github.com/cad/vehicle-tracker-api/issues/14)
+
+## [v1.1.4](https://github.com/cad/vehicle-tracker-api/tree/v1.1.4) (2017-05-21)
+[Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.1.3...v1.1.4)
+
 ## [v1.1.3](https://github.com/cad/vehicle-tracker-api/tree/v1.1.3) (2017-05-17)
 [Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.1.2...v1.1.3)
 
@@ -63,6 +78,3 @@
 
 - Write docs [\#2](https://github.com/cad/vehicle-tracker-api/issues/2)
 - Write unit tests [\#1](https://github.com/cad/vehicle-tracker-api/issues/1)
-
-
-

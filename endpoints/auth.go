@@ -1,12 +1,12 @@
 package endpoints
 
-
 import (
+	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
-	"encoding/json"
+
 	"github.com/cad/vehicle-tracker-api/repository"
-	"log"
 )
 
 func TokenAuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
@@ -32,18 +32,19 @@ func TokenAuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		// Permitted
+		user, err := repository.GetUserByToken(token)
+		if err != nil {
+			log.Printf("can't get user by token %s", token)
+			sendErrorMessage(w, "Not Authorized", 401)
+		}
+		ctx := NewUUIDContext(r.Context(), user.UUID)
 
-		// TODO(cad): Put the tokenOwner in a Context and pass it around
-		// with the http.Request object in yor API.
-
-
-		h.ServeHTTP(w, r)
+		h.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
 
-
 type AuthorizationRequestPayload struct {
-	Email string `json:"email" valid:"email"`
+	Email    string `json:"email" valid:"email"`
 	Password string `json:"password"`
 }
 
@@ -54,9 +55,7 @@ type AuthorizationParams struct {
 	// in: body
 	// required: true
 	Data AuthorizationRequestPayload
-
 }
-
 
 // swagger:route POST /auth/ Auth Authorize
 // Get an `authorization_token`.
@@ -72,7 +71,6 @@ func Authorize(w http.ResponseWriter, req *http.Request) {
 		sendErrorMessage(w, "Error decoding the input", http.StatusBadRequest)
 		return
 	}
-
 
 	user, err := repository.GetUserByEmail(params.Data.Email)
 	if err != nil {
@@ -101,7 +99,6 @@ func Authorize(w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
-
 // swagger:route GET /auth/ Auth CheckAuth
 // See if you are authenticated or not.
 //
@@ -112,7 +109,22 @@ func Authorize(w http.ResponseWriter, req *http.Request) {
 //     default: ErrorMsg
 //     200: AuthSuccessOKResponse
 func CheckAuth(w http.ResponseWriter, req *http.Request) {
-	payload := AuthorizationCheckResponsePayload{Authorized: true}
+	uuid, ok := UUIDFromContext(req.Context())
+	if !ok {
+		sendErrorMessage(w, "Can't get uuid from token", 500)
+		return
+	}
+
+	user, _ := repository.GetUserByUUID(uuid)
+	if user.ID == 0 {
+		sendErrorMessage(w, "Not found", 404)
+		return
+	}
+
+	payload := AuthorizationCheckResponsePayload{
+		Authorized: true,
+		User:       user,
+	}
 	j, err := json.Marshal(payload)
 	checkErr(w, err)
 	sendContentType(w, "application/json")

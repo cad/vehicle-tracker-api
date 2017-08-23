@@ -1,16 +1,16 @@
 package endpoints
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"os"
 	"net/http"
 	"net/http/httptest"
-	"encoding/json"
+	"os"
 	"testing"
-	"bytes"
+
 	"github.com/cad/vehicle-tracker-api/repository"
 )
-
 
 func TestGetAllUsersEndpoint(t *testing.T) {
 	// Init
@@ -22,7 +22,6 @@ func TestGetAllUsersEndpoint(t *testing.T) {
 	user, _ := repository.CreateNewUser("test@test.com", "1234")
 	_, _ = repository.CreateNewUser("test1@test.com", "1234")
 	token, _ := user.RenewToken()
-
 
 	// Execute
 	req, _ := http.NewRequest("GET", "/user/", nil)
@@ -45,7 +44,6 @@ func TestGetAllUsersEndpoint(t *testing.T) {
 	}
 }
 
-
 func TestGetUserEndpoint(t *testing.T) {
 	// Init
 	repository.ConnectDB("sqlite3", "/tmp/test.db")
@@ -66,7 +64,7 @@ func TestGetUserEndpoint(t *testing.T) {
 
 	// Test
 	if res.Code != 200 {
-		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
 		return
 	}
 
@@ -83,7 +81,6 @@ func TestGetUserEndpoint(t *testing.T) {
 
 }
 
-
 func TestCreateUserEndpoint(t *testing.T) {
 	// Init
 	repository.ConnectDB("sqlite3", "/tmp/test.db")
@@ -98,9 +95,9 @@ func TestCreateUserEndpoint(t *testing.T) {
 
 	// Execute
 	params := (struct {
-		Email string `json:"email" valid:"email"`
+		Email    string `json:"email" valid:"email"`
 		Password string `json:"password"`
-	}{Email: newUserEmail, Password: newUserPassword })
+	}{Email: newUserEmail, Password: newUserPassword})
 	paramsJSON, err := json.Marshal(&params)
 	if err != nil {
 		t.Error(errorMsg("UserCreatinStruct", "Marshallable", "UnMarshallable"))
@@ -140,8 +137,8 @@ func TestDeleteUserEndpoint(t *testing.T) {
 
 	// Prepare
 	user, _ := repository.CreateNewUser("test@test.com", "1234")
-	_, _ = repository.CreateNewUser("test1@test.com", "1234")
-	token, _ := user.RenewToken()
+	user2, _ := repository.CreateNewUser("test1@test.com", "1234")
+	token, _ := user2.RenewToken()
 
 	// Execute
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/user/%s", user.UUID), nil)
@@ -156,7 +153,7 @@ func TestDeleteUserEndpoint(t *testing.T) {
 	// Test
 	afterCount := len(repository.GetAllUsers())
 	if res.Code != 200 {
-		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
 		return
 	}
 
@@ -174,4 +171,30 @@ func TestDeleteUserEndpoint(t *testing.T) {
 		t.Error(errorMsg("User", "CanNotBeFound", "Found"))
 	}
 
+}
+
+func TestDeleteUserEndpointDeleteSelf(t *testing.T) {
+	// Init
+	repository.ConnectDB("sqlite3", "/tmp/test.db")
+	defer repository.CloseDB()
+	defer os.Remove("/tmp/test.db")
+
+	// Prepare
+	user, _ := repository.CreateNewUser("test@test.com", "1234")
+	token, _ := user.RenewToken()
+
+	// Execute
+	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/user/%s", user.UUID), nil)
+
+	// Authenticate
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	res := httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	if res.Code != 403 {
+		t.Error(errorMsg("StatusCode", "403", fmt.Sprintf("%d", res.Code)))
+		return
+	}
 }

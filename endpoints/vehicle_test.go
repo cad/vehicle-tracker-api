@@ -1,16 +1,16 @@
 package endpoints
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"os"
 	"net/http"
 	"net/http/httptest"
-	"encoding/json"
+	"os"
 	"testing"
-	"bytes"
+
 	"github.com/cad/vehicle-tracker-api/repository"
 )
-
 
 func TestGetAllVehiclesEndpoint(t *testing.T) {
 	// Init
@@ -61,10 +61,7 @@ func TestGetAllVehiclesEndpoint(t *testing.T) {
 		return
 	}
 
-
-
 }
-
 
 func TestCreateNewVehicleEndpoint(t *testing.T) {
 	// Init
@@ -94,7 +91,6 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 		//
 		// required: true
 		Type string `json:"type" valid:"required"`
-
 	}
 	user, _ := repository.CreateNewUser("test@test.com", "1234")
 	token, _ := user.RenewToken()
@@ -102,10 +98,10 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 	agent, _ := repository.CreateNewAgent("string")
 	groupID, _ := repository.CreateNewGroup("string")
 	vehicle := Ident{
-		PlateID: "test",
+		PlateID:   "test",
 		AgentUUID: agent.UUID,
-		Groups: []int{int(groupID)},
-		Type: "SCHOOL-BUS",
+		Groups:    []int{int(groupID)},
+		Type:      "SCHOOL-BUS",
 	}
 	vehicleJSON, err := json.Marshal(&vehicle)
 	if err != nil {
@@ -123,11 +119,10 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 
 	// Test
 	if res.Code != 200 {
-		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
 		return
 	}
 }
-
 
 func TestGetVehicleEndpoint(t *testing.T) {
 	// Init
@@ -145,7 +140,6 @@ func TestGetVehicleEndpoint(t *testing.T) {
 		"SCHOOL-BUS",
 	)
 
-
 	// Execute
 	req, _ := http.NewRequest("GET", "/vehicle/test", nil)
 	res := httptest.NewRecorder()
@@ -153,7 +147,7 @@ func TestGetVehicleEndpoint(t *testing.T) {
 
 	// Test
 	if res.Code != 200 {
-		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
 		return
 	}
 
@@ -163,7 +157,6 @@ func TestGetVehicleEndpoint(t *testing.T) {
 		t.Error(errorMsg("Vehicle", "Unmarshallable", "NotUnmarshallable"))
 		return
 	}
-
 
 	if vehicle.PlateID != "test" {
 		t.Error(errorMsg("PlateID", "test", vehicle.PlateID))
@@ -185,10 +178,7 @@ func TestGetVehicleEndpoint(t *testing.T) {
 		return
 	}
 
-
-
 }
-
 
 func TestDeleteVehicleEndpoint(t *testing.T) {
 	// Init
@@ -207,7 +197,6 @@ func TestDeleteVehicleEndpoint(t *testing.T) {
 		[]int{int(groupID)},
 		"SCHOOL-BUS",
 	)
-
 
 	// Execute
 	req, _ := http.NewRequest("DELETE", "/vehicle/test", nil)
@@ -249,7 +238,6 @@ func TestDeleteVehicleEndpointEmptyInput(t *testing.T) {
 		[]int{int(groupID)},
 		"SCHOOL-BUS",
 	)
-
 
 	// Execute
 	req, _ := http.NewRequest("DELETE", "/vehicle/+", nil)
@@ -311,13 +299,12 @@ func TestSetVehicleAgentEndpoint(t *testing.T) {
 	// Authenticate
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
-
 	res := httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
 	// Test
 	if res.Code != 200 {
-		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
 		return
 	}
 
@@ -330,7 +317,6 @@ func TestSetVehicleAgentEndpoint(t *testing.T) {
 		t.Error(errorMsg("vehicle.Agent.UUID", params.Agent.UUID, vehicle.Agent.UUID))
 	}
 }
-
 
 // Test Filter
 func TestFilterVehicleEndpoint(t *testing.T) {
@@ -364,7 +350,7 @@ func TestFilterVehicleEndpoint(t *testing.T) {
 
 	// Test
 	if res.Code != 200 {
-		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
 		return
 	}
 
@@ -380,6 +366,7 @@ func TestFilterVehicleEndpoint(t *testing.T) {
 
 	}
 }
+
 // Test Group Create
 func TestCreateVehicleGroupEndpoint(t *testing.T) {
 	// Init
@@ -414,7 +401,7 @@ func TestCreateVehicleGroupEndpoint(t *testing.T) {
 
 	// Test
 	if res.Code != 200 {
-		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
 		return
 	}
 	var group repository.Group
@@ -427,12 +414,10 @@ func TestCreateVehicleGroupEndpoint(t *testing.T) {
 	createdGroup, _ := repository.GetGroupByName("string")
 
 	if createdGroup.ID != group.ID {
-		t.Error(errorMsg("createdGroup.ID", fmt.Sprintf("%d", group.ID), fmt.Sprintf("%d",createdGroup.ID)))
+		t.Error(errorMsg("createdGroup.ID", fmt.Sprintf("%d", group.ID), fmt.Sprintf("%d", createdGroup.ID)))
 		return
 	}
 }
-
-
 
 func TestGetAllVehicleGroupsEndpoint(t *testing.T) {
 	// Init
@@ -450,7 +435,7 @@ func TestGetAllVehicleGroupsEndpoint(t *testing.T) {
 
 	// Test
 	if res.Code != 200 {
-		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
 		return
 	}
 	var groups []repository.Group
@@ -463,18 +448,56 @@ func TestGetAllVehicleGroupsEndpoint(t *testing.T) {
 	createdGroups := repository.GetAllGroups()
 
 	if len(createdGroups) != len(groups) {
-		t.Error(errorMsg("len(createdGroups)", fmt.Sprintf("%d", len(groups)), fmt.Sprintf("%d",len(createdGroups))))
+		t.Error(errorMsg("len(createdGroups)", fmt.Sprintf("%d", len(groups)), fmt.Sprintf("%d", len(createdGroups))))
 		return
 	}
 
 	if createdGroups[0].ID != groups[0].ID {
-		t.Error(errorMsg("createdGroups[0].ID", fmt.Sprintf("%d", groups[0].ID), fmt.Sprintf("%d",createdGroups[0].ID)))
+		t.Error(errorMsg("createdGroups[0].ID", fmt.Sprintf("%d", groups[0].ID), fmt.Sprintf("%d", createdGroups[0].ID)))
 		return
 	}
 
 	if createdGroups[0].Name != groups[0].Name {
-		t.Error(errorMsg("createdGroups[0].Name", fmt.Sprintf("%s", groups[0].Name), fmt.Sprintf("%s",createdGroups[0].Name)))
+		t.Error(errorMsg("createdGroups[0].Name", fmt.Sprintf("%s", groups[0].Name), fmt.Sprintf("%s", createdGroups[0].Name)))
 		return
 	}
 
+}
+
+func TestGetAllVehicleTypesEndpoint(t *testing.T) {
+	// Init
+	repository.ConnectDB("sqlite3", "/tmp/test.db")
+	defer repository.CloseDB()
+	defer os.Remove("/tmp/test.db")
+
+	// Prepare
+
+	// Execute
+	req, _ := http.NewRequest("GET", "/vehicle/type/", nil)
+	res := httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	if res.Code != 200 {
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
+		return
+	}
+	var types []string
+	err := json.Unmarshal([]byte(res.Body.String()), &types)
+	if err != nil {
+		t.Error(errorMsg("Vehicle", "Unmarshallable", "NotUnmarshallable"))
+		return
+	}
+
+	createdTypes := repository.GetAllTypes()
+
+	if len(createdTypes) != len(types) {
+		t.Error(errorMsg("len(createdTypes)", fmt.Sprintf("%d", len(types)), fmt.Sprintf("%d", len(createdTypes))))
+		return
+	}
+
+	if createdTypes[0] != types[0] {
+		t.Error(errorMsg("createdTypes[0]", fmt.Sprintf("%s", types[0]), fmt.Sprintf("%s", createdTypes[0])))
+		return
+	}
 }

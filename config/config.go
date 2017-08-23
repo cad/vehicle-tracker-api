@@ -1,15 +1,15 @@
 package config
 
 import (
-	"os"
 	"encoding/json"
 	"fmt"
+	"os"
 )
 
-const VERSION = "1.1.4"
+const VERSION = "1.1.5"
 
 type Configuration struct {
-	DB DBParams `json:"db`
+	DB     DBParams     `json:"db`
 	Server ServerParams `json:"server"`
 }
 
@@ -23,7 +23,6 @@ type ServerParams struct {
 }
 
 var C Configuration
-
 
 func LoadConfigFile(filePath string) (err error) {
 	var file *os.File

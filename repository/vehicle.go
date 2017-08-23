@@ -4,27 +4,27 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-//	"github.com/jinzhu/gorm"
 
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	//	"github.com/jinzhu/gorm"
 )
 
 const (
 	SCHOOL_BUS = "SCHOOL-BUS"
-	SOLAR_CAR = "SOLAR-CAR"
+	SOLAR_CAR  = "SOLAR-CAR"
 )
 
 var VEHICLE_TYPES []string = []string{SCHOOL_BUS, SOLAR_CAR}
 
 type Vehicle struct {
-	ID        uint       `json:"-"           gorm:"primary_key"`
-	CreatedAt time.Time  `json:"-"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	PlateID   string     `json:"plate_id"    gorm:"not null;unique_index"`
-	Agent     Agent      `json:"agent"       gorm:"not null;ForeignKey:AgentID"`
-	AgentID   uint       `json:"-"`
-	Groups    []Group    `json:"groups"      gorm:"many2many:vehicle_group;"`
-	Type      string     `json:"type"`
+	ID        uint      `json:"-"           gorm:"primary_key"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"updated_at"`
+	PlateID   string    `json:"plate_id"    gorm:"not null;unique_index"`
+	Agent     Agent     `json:"agent"       gorm:"not null;ForeignKey:AgentID"`
+	AgentID   uint      `json:"-"`
+	Groups    []Group   `json:"groups"      gorm:"many2many:vehicle_group;"`
+	Type      string    `json:"type"`
 }
 
 type Group struct {
@@ -35,8 +35,7 @@ type Group struct {
 	Name      string     `json:"name"         gorm:"not null;unique_index"`
 }
 
-
-func GetVehicleByPlateID (plateID string) (Vehicle, error) {
+func GetVehicleByPlateID(plateID string) (Vehicle, error) {
 	var vehicle Vehicle
 	if plateID == "" {
 		return vehicle, &VehicleError{What: "plateID", Type: "Empty", Arg: plateID}
@@ -48,7 +47,7 @@ func GetVehicleByPlateID (plateID string) (Vehicle, error) {
 	return vehicle, &VehicleError{What: "Vehicle", Type: "Not-Found", Arg: plateID}
 }
 
-func GetVehicleByAgentUUID (agentUUID string) (Vehicle, error) {
+func GetVehicleByAgentUUID(agentUUID string) (Vehicle, error) {
 	var vehicle Vehicle
 	if agentUUID == "" {
 		return vehicle, &VehicleError{What: "agentUUID", Type: "Empty", Arg: agentUUID}
@@ -66,7 +65,7 @@ func GetVehicleByAgentUUID (agentUUID string) (Vehicle, error) {
 	return vehicle, nil
 }
 
-func GetAllVehicles () []Vehicle {
+func GetAllVehicles() []Vehicle {
 	var vehicles []Vehicle
 
 	db.Preload("Groups").Preload("Agent").Find(&vehicles)
@@ -74,8 +73,7 @@ func GetAllVehicles () []Vehicle {
 	return vehicles
 }
 
-
-func FilterVehicles (vehicleType string, groupID uint) []Vehicle {
+func FilterVehicles(vehicleType string, groupID uint) []Vehicle {
 	var vehicles []Vehicle
 
 	q := db.Preload("Groups").Preload("Agent").Joins("JOIN vehicle_group ON vehicle_group.vehicle_id = vehicles.id")
@@ -92,7 +90,7 @@ func FilterVehicles (vehicleType string, groupID uint) []Vehicle {
 	return vehicles
 }
 
-func VehicleSetAgent(plateID,uUID string) error {
+func VehicleSetAgent(plateID, uUID string) error {
 	vehicle, err := GetVehicleByPlateID(plateID)
 	if err != nil {
 		return err
@@ -106,7 +104,7 @@ func VehicleSetAgent(plateID,uUID string) error {
 	return nil
 }
 
-func CreateVehicle (plateID string, agentUUID string, groupIDs []int, vehicleType string) error {
+func CreateVehicle(plateID string, agentUUID string, groupIDs []int, vehicleType string) error {
 	if plateID == "" {
 		return &VehicleError{What: "plateID", Type: "Empty", Arg: plateID}
 	}
@@ -132,11 +130,10 @@ func CreateVehicle (plateID string, agentUUID string, groupIDs []int, vehicleTyp
 		return &VehicleError{What: "VehicleType", Type: "Not-Found", Arg: vehicleType}
 	}
 
-
 	// Create Vehicle
 	vehicle := Vehicle{
-		PlateID: plateID,  // TODO(cad): sanitize `plateID`
-		Type: vehicleType,
+		PlateID: plateID, // TODO(cad): sanitize `plateID`
+		Type:    vehicleType,
 	}
 	var a Agent
 	db.Where(&Agent{UUID: agentUUID}).First(&a)
@@ -145,13 +142,13 @@ func CreateVehicle (plateID string, agentUUID string, groupIDs []int, vehicleTyp
 	}
 	vehicle.Agent = a
 	vehicle.AgentID = a.ID
-	vehicle.Groups = make([]Group,0)
+	vehicle.Groups = make([]Group, 0)
 	// Set groups if not empty
 	if len(groups) > 0 {
 		vehicle.Groups = groups
 	}
 
-	db.Create(&vehicle)  // TODO(cad): check here if vehicle
+	db.Create(&vehicle) // TODO(cad): check here if vehicle
 	if db.NewRecord(&vehicle) == true {
 		return &VehicleError{What: "Vehicle.PlateID", Type: "Already-Exists", Arg: plateID}
 	}
@@ -159,8 +156,7 @@ func CreateVehicle (plateID string, agentUUID string, groupIDs []int, vehicleTyp
 	return nil
 }
 
-
-func DeleteVehicleByPlateID (plateID string) error{
+func DeleteVehicleByPlateID(plateID string) error {
 	vehicle, err := GetVehicleByPlateID(plateID)
 	if err != nil {
 		return err
@@ -170,7 +166,6 @@ func DeleteVehicleByPlateID (plateID string) error{
 	return nil
 }
 
-
 func CreateNewGroup(name string) (uint, error) {
 	group := Group{Name: name}
 	db.Create(&group)
@@ -178,14 +173,13 @@ func CreateNewGroup(name string) (uint, error) {
 		return group.ID, &VehicleError{
 			What: "Group.Name",
 			Type: "Unknown-Error",
-			Arg: name,
+			Arg:  name,
 		}
 	}
 	return group.ID, nil
 }
 
-
-func GetAllGroups () []Group {
+func GetAllGroups() []Group {
 	var groups []Group
 
 	db.Find(&groups)
@@ -193,7 +187,11 @@ func GetAllGroups () []Group {
 	return groups
 }
 
-func GetGroupByID (iD uint) (Group, error) {
+func GetAllTypes() []string {
+	return VEHICLE_TYPES
+}
+
+func GetGroupByID(iD uint) (Group, error) {
 	var group Group
 	db.Where(&Group{ID: iD}).First(&group)
 	if group.ID != 0 {
@@ -202,7 +200,7 @@ func GetGroupByID (iD uint) (Group, error) {
 	return group, &VehicleError{What: "VehicleGroup.ID", Type: "Not-Found", Arg: fmt.Sprintf("%d", iD)}
 }
 
-func GetGroupByName (name string) (Group, error) {
+func GetGroupByName(name string) (Group, error) {
 	var group Group
 	db.Where(&Group{Name: name}).First(&group)
 	if group.ID != 0 {
@@ -214,9 +212,8 @@ func GetGroupByName (name string) (Group, error) {
 type VehicleError struct {
 	What string
 	Type string
-	Arg string
+	Arg  string
 }
-
 
 func (e VehicleError) Error() string {
 	return fmt.Sprintf("%s: <%s> %s", e.Type, e.What, e.Arg)

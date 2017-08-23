@@ -418,6 +418,23 @@
         }
       }
     },
+    "/vehicle/type/": {
+      "get": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Get possible vehicle types defined in the system.",
+        "operationId": "GetAllTypes",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehicleTypesResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
     "/vehicle/{plate_id}": {
       "get": {
         "tags": [
@@ -812,6 +829,15 @@
       "description": "Returns a vehicle",
       "schema": {
         "$ref": "#/definitions/Vehicle"
+      }
+    },
+    "VehicleSuccessVehicleTypesResponse": {
+      "description": "Returns list of vehicle types",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
       }
     },
     "VehicleSuccessVehiclesResponse": {

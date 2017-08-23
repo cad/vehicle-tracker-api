@@ -1,14 +1,15 @@
 package endpoints
 
 import (
-	"github.com/gorilla/mux"
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
-	_ "github.com/cad/vehicle-tracker-api/statik"
-	"github.com/cad/vehicle-tracker-api/config"
+
 	"github.com/cad/statik/fs"
-	"io/ioutil"
-	"encoding/json"
+	"github.com/cad/vehicle-tracker-api/config"
+	_ "github.com/cad/vehicle-tracker-api/statik"
+	"github.com/gorilla/mux"
 )
 
 func use(h http.HandlerFunc, middleware ...func(http.HandlerFunc) http.HandlerFunc) http.HandlerFunc {
@@ -23,7 +24,7 @@ func GetRouter() http.Handler {
 	router := mux.NewRouter()
 
 	// Apply CORS to all preflight (OPTIONS) request.
-	router.Methods("OPTIONS").HandlerFunc( func(w http.ResponseWriter, r *http.Request){
+	router.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		doCORS(w, r)
 	})
 
@@ -40,7 +41,7 @@ func GetRouter() http.Handler {
 	// Agents
 	router.HandleFunc("/agent/", use(GetAllAgents, CORSMiddleware)).Methods("GET")
 	router.HandleFunc("/agent/{uuid}/sync", use(SyncAgent, CORSMiddleware)).Methods("POST")
-	router.HandleFunc("/agents/{uuid}/sync", use(SyncAgent, CORSMiddleware)).Methods("POST")  // NOTE(cad): this line added for backwards compatibility
+	router.HandleFunc("/agents/{uuid}/sync", use(SyncAgent, CORSMiddleware)).Methods("POST") // NOTE(cad): this line added for backwards compatibility
 
 	// Vehicles
 	router.HandleFunc("/vehicle/", use(GetAllVehicles, CORSMiddleware)).Methods("GET")
@@ -51,7 +52,7 @@ func GetRouter() http.Handler {
 	router.HandleFunc("/vehicle/{plate_id}/agent", use(VehicleSetAgent, TokenAuthMiddleware, CORSMiddleware)).Methods("POST")
 	router.HandleFunc("/vehicle/{plate_id}", use(GetVehicle, CORSMiddleware)).Methods("GET")
 	router.HandleFunc("/vehicle/{plate_id}", use(DeleteVehicle, TokenAuthMiddleware, CORSMiddleware)).Methods("DELETE")
-
+	router.HandleFunc("/vehicle/type/", use(GetAllTypes, CORSMiddleware)).Methods("GET")
 	// WebSocket
 	router.HandleFunc("/ws/vehicle/filter", use(FilterVehiclesWS, CORSMiddleware)).Methods("GET")
 
@@ -104,7 +105,6 @@ func GetRouter() http.Handler {
 		}
 		w.Write(contents)
 	})
-
 
 	statikFS, err := fs.New("/static/")
 	if err != nil {

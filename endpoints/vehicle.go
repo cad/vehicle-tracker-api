@@ -1,17 +1,18 @@
 package endpoints
 
 import (
+	"encoding/json"
+	"net/http"
+
+	valid "github.com/asaskevich/govalidator"
+	"github.com/cad/vehicle-tracker-api/event"
+	"github.com/cad/vehicle-tracker-api/repository"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-	valid "github.com/asaskevich/govalidator"
-	"net/http"
-	"encoding/json"
-	"github.com/cad/vehicle-tracker-api/repository"
-	"github.com/cad/vehicle-tracker-api/event"
 	//"strings"
-	"strconv"
 	"log"
-//	"fmt"
+	"strconv"
+	//	"fmt"
 )
 
 // VehicleResponse
@@ -34,7 +35,6 @@ type VehicleGroupsResponse struct {
 	}
 }
 
-
 // CoordinatePair represents a location on earth
 //
 // swagger:model
@@ -51,7 +51,6 @@ type CoordinatePair struct {
 	Lon float64 `json:"lon"`
 }
 
-
 // swagger:parameters GetVehicle
 type GetVehicleParams struct {
 
@@ -59,7 +58,6 @@ type GetVehicleParams struct {
 	// in: path
 	// required: true
 	PlateID string `json:"plate_id"`
-
 }
 
 // swagger:route GET /vehicle/{plate_id} Vehicles GetVehicle
@@ -83,7 +81,6 @@ func GetVehicle(w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
-
 // swagger:route GET /vehicle/ Vehicles GetAllVehicles
 // Get all vehicles in the database.
 //
@@ -100,7 +97,6 @@ func GetAllVehicles(w http.ResponseWriter, req *http.Request) {
 	sendContentType(w, "application/json")
 	w.Write(j)
 }
-
 
 // swagger:parameters FilterVehicles
 type FilterVehiclesParams struct {
@@ -123,7 +119,6 @@ type FilterVehiclesParams struct {
 	// in: query
 	// required: false
 	VehicleGroupID int `json:"vehicle_group_id"`
-
 }
 
 // swagger:route GET /vehicle/filter Vehicles FilterVehicles
@@ -141,7 +136,7 @@ func FilterVehicles(w http.ResponseWriter, req *http.Request) {
 
 	}
 	params := FilterVehiclesParams{
-		VehicleType: req.URL.Query().Get("vehicle_type"),
+		VehicleType:    req.URL.Query().Get("vehicle_type"),
 		VehicleGroupID: groupID,
 	}
 	var vehicles []repository.Vehicle
@@ -180,7 +175,6 @@ type FilterVehiclesWSParams struct {
 	// in: query
 	// required: false
 	VehicleGroupID int `json:"vehicle_group_id"`
-
 }
 
 // swagger:route GET /ws/vehicle/filter WebSocket FilterVehiclesWS
@@ -199,7 +193,7 @@ func FilterVehiclesWS(w http.ResponseWriter, req *http.Request) {
 
 	}
 	params := FilterVehiclesParams{
-		VehicleType: req.URL.Query().Get("vehicle_type"),
+		VehicleType:    req.URL.Query().Get("vehicle_type"),
 		VehicleGroupID: groupID,
 	}
 
@@ -210,7 +204,7 @@ func FilterVehiclesWS(w http.ResponseWriter, req *http.Request) {
 	}
 	defer c.Close()
 	newAgentEvent := event.MakeKind(repository.NEW_AGENT)
-	handler := func (e *event.Event){
+	handler := func(e *event.Event) {
 		agent, ok := e.Payload.(repository.Agent)
 		if !ok {
 			log.Println("Cannot assert type Agent. Ignoring.")
@@ -257,10 +251,7 @@ func FilterVehiclesWS(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-
-
 }
-
 
 // swagger:parameters CreateNewVehicle
 type CreateNewVehicleParams struct {
@@ -289,9 +280,7 @@ type CreateNewVehicleParams struct {
 		//
 		// required: true
 		Type string `json:"type" valid:"required"`
-
 	}
-
 }
 
 // swagger:route POST /vehicle/ Vehicles CreateNewVehicle
@@ -325,23 +314,21 @@ func CreateNewVehicle(w http.ResponseWriter, req *http.Request) {
 		params.Ident.Type,
 	)
 
-	if err != nil  {
+	if err != nil {
 		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	vehicle, err := repository.GetVehicleByPlateID(params.Ident.PlateID)
-	if err != nil  {
+	if err != nil {
 		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 
 	j, err := json.Marshal(vehicle)
 	checkErr(w, err)
 	sendContentType(w, "application/json")
 	w.Write(j)
 }
-
 
 // swagger:parameters VehicleSetAgent
 type VehicleSetAgentParams struct {
@@ -359,9 +346,7 @@ type VehicleSetAgentParams struct {
 		//
 		// required: true
 		UUID string `json:"uuid" valid:"required"`
-
 	}
-
 }
 
 // swagger:route POST /vehicle/{plate_id}/agent Vehicles VehicleSetAgent
@@ -390,23 +375,21 @@ func VehicleSetAgent(w http.ResponseWriter, req *http.Request) {
 	}
 
 	err = repository.VehicleSetAgent(params.PlateID, params.Agent.UUID)
-	if err != nil  {
+	if err != nil {
 		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
-	if err != nil  {
+	if err != nil {
 		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 
 	j, err := json.Marshal(vehicle)
 	checkErr(w, err)
 	sendContentType(w, "application/json")
 	w.Write(j)
 }
-
 
 // swagger:parameters DeleteVehicle
 type DeleteVehicleParams struct {
@@ -415,7 +398,6 @@ type DeleteVehicleParams struct {
 	// in: path
 	// required: true
 	PlateID string `json:"plate_id" validate:"required"`
-
 }
 
 // swagger:route DELETE /vehicle/{plate_id} Vehicles DeleteVehicle
@@ -437,7 +419,7 @@ func DeleteVehicle(w http.ResponseWriter, req *http.Request) {
 	}
 
 	error := repository.DeleteVehicleByPlateID(params.PlateID)
-	if error!=nil {
+	if error != nil {
 		sendErrorMessage(w, "There is no vehicle with that ID", http.StatusNotFound)
 		return
 	}
@@ -447,8 +429,6 @@ func DeleteVehicle(w http.ResponseWriter, req *http.Request) {
 	sendContentType(w, "application/json")
 	w.Write(j)
 }
-
-
 
 // swagger:parameters CreateNewGroup
 type CreateNewGroupParams struct {
@@ -463,7 +443,6 @@ type CreateNewGroupParams struct {
 		// required: true
 		Name string `json:"name" valid:"required"`
 	}
-
 }
 
 // swagger:route POST /vehicle/group/ Vehicles CreateNewGroup
@@ -495,7 +474,7 @@ func CreateNewGroup(w http.ResponseWriter, req *http.Request) {
 		params.Group.Name,
 	)
 
-	if err != nil  {
+	if err != nil {
 		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -507,6 +486,21 @@ func CreateNewGroup(w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
+// swagger:route GET /vehicle/type/ Vehicles GetAllTypes
+// Get possible vehicle types defined in the system.
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleSuccessVehicleTypesResponse
+func GetAllTypes(w http.ResponseWriter, req *http.Request) {
+	var types []string
+	types = repository.GetAllTypes()
+	j, err := json.Marshal(types)
+	checkErr(w, err)
+	sendContentType(w, "application/json")
+	w.Write(j)
+}
 
 // swagger:route GET /vehicle/group/ Vehicles GetAllGroups
 // Get all vehicle groups in the database.

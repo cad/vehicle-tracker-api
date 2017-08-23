@@ -4,20 +4,21 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/google/uuid"
 	_ "github.com/jinzhu/gorm/dialects/sqlite" // Force sqlite dialect to load
 	"gopkg.in/hlandau/passlib.v1"
-	"github.com/google/uuid"
 )
 
 type User struct {
-	ID        uint       `json:"-"     gorm:"primary_key"`
-	UUID     string     `json:"uuid" gorm:"unique_index"`
-	CreatedAt time.Time  `json:"-"`
-	UpdatedAt time.Time  `json:"updated_at"`
+	ID        uint      `json:"-"     gorm:"primary_key"`
+	UUID      string    `json:"uuid" gorm:"unique_index"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"updated_at"`
 
-	Email     string     `json:"email"`
-	Password  string     `json:"-"`
-	Token     string     `json:"-"`
+	Email    string `json:"email"`
+	Password string `json:"-"`
+	Token    string `json:"-"`
 }
 
 func (u *User) SetPassword(password string) error {
@@ -26,7 +27,7 @@ func (u *User) SetPassword(password string) error {
 		return &UserError{
 			What: "User",
 			Type: "Unknown",
-			Arg: err.Error(),
+			Arg:  err.Error(),
 		}
 	}
 	u.Password = hash
@@ -38,7 +39,7 @@ func (u *User) RenewToken() (string, error) {
 		return "", &UserError{
 			What: "User",
 			Type: "User-Not-Persisted",
-			Arg: u.Email,
+			Arg:  u.Email,
 		}
 	}
 	uuidToken, err := uuid.NewRandom()
@@ -50,8 +51,7 @@ func (u *User) RenewToken() (string, error) {
 	return u.Token, nil
 }
 
-
-func GetAllUsers () []User {
+func GetAllUsers() []User {
 	var users []User
 
 	db.Find(&users)
@@ -59,7 +59,7 @@ func GetAllUsers () []User {
 	return users
 }
 
-func (u *User) CheckPassword(password string) (bool) {
+func (u *User) CheckPassword(password string) bool {
 	_, err := passlib.Verify(password, u.Password)
 	if err != nil {
 		log.Println(err.Error())
@@ -72,7 +72,7 @@ func (u *User) CheckPassword(password string) (bool) {
 	return true
 }
 
-func CheckToken(token string) (bool) {
+func CheckToken(token string) bool {
 	if token == "" {
 		// TODO(cad): Write a log about what happened here.
 		return false
@@ -98,7 +98,7 @@ func GetUserByUUID(uUID string) (User, error) {
 		return user, UserError{
 			What: "User",
 			Type: "Not-Found",
-			Arg: uUID,
+			Arg:  uUID,
 		}
 	}
 	return user, nil
@@ -115,9 +115,24 @@ func GetUserByEmail(email string) (User, error) {
 		return user, UserError{
 			What: "User",
 			Type: "Not-Found",
-			Arg: email,
+			Arg:  email,
 		}
 	}
+	return user, nil
+}
+
+func GetUserByToken(token string) (User, error) {
+	var user User
+	if token == "" {
+		// TODO(cad): Write a log about what happened here.
+		return user, fmt.Errorf("token is expected to be not empty, but it's empty instead")
+	}
+
+	db.Where(&User{Token: token}).First(&user)
+	if db.NewRecord(&user) {
+		return user, fmt.Errorf("user is not found")
+	}
+
 	return user, nil
 }
 
@@ -130,18 +145,18 @@ func CreateNewUser(email string, password string) (User, error) {
 	uUID, err := uuid.NewRandom()
 	user = User{
 		Email: email,
-		UUID: uUID.String(),
+		UUID:  uUID.String(),
 	}
 	if err != nil {
 		return user, err
 	}
 	user.SetPassword(password)
 	db.Create(&user)
-	if db.NewRecord(&user)  {
+	if db.NewRecord(&user) {
 		return user, UserError{
 			What: "User",
 			Type: "Can-Not-Create",
-			Arg: email,
+			Arg:  email,
 		}
 	}
 	return user, nil
@@ -158,7 +173,7 @@ func DeleteUserByUUID(uUID string) (User, error) {
 		return user, UserError{
 			What: "User",
 			Type: "Can-Not-Delete",
-			Arg: uUID,
+			Arg:  uUID,
 		}
 	}
 
@@ -169,9 +184,8 @@ func DeleteUserByUUID(uUID string) (User, error) {
 type UserError struct {
 	What string
 	Type string
-	Arg string
+	Arg  string
 }
-
 
 func (e UserError) Error() string {
 	return fmt.Sprintf("%s: <%s> %s", e.Type, e.What, e.Arg)

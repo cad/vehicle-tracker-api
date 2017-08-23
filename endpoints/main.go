@@ -18,18 +18,18 @@
 //   - application/json
 //
 //   SecurityDefinitions:
-//     - Bearer:
-//         type: apiKey
-//         name: Authorization
-//         in: header
+//     Bearer:
+//       type: apiKey
+//       name: Authorization
+//       in: header
 //
 // swagger:meta
 package endpoints
 
 import (
-	"net/http"
 	"encoding/json"
 	"log"
+	"net/http"
 )
 
 type GenericError struct {
@@ -38,7 +38,6 @@ type GenericError struct {
 	// Required: true
 	Message string `json:"message"`
 }
-
 
 // Generic Error
 // swagger:response ErrorMsg
@@ -60,11 +59,9 @@ func sendErrorMessage(w http.ResponseWriter, message string, status int) {
 	w.Write(j)
 }
 
-
-func sendContentType(w http.ResponseWriter, contentType string){
+func sendContentType(w http.ResponseWriter, contentType string) {
 	w.Header().Set("Content-Type", contentType)
 }
-
 
 func checkErr(w http.ResponseWriter, err error) {
 	if err != nil {

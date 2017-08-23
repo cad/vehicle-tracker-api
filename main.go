@@ -1,15 +1,17 @@
 //go:generate swagger generate spec -o data/swagger.json
+//go:generate rm -rf statik/statik.go
 //go:generate statik -src data/
 package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/cad/vehicle-tracker-api/config"
 	"github.com/cad/vehicle-tracker-api/repository"
 	"github.com/cad/vehicle-tracker-api/server"
 	"github.com/urfave/cli"
-	"log"
-	"os"
 )
 
 func main() {

@@ -1,14 +1,14 @@
 package endpoints
 
-
 import (
-	"github.com/gorilla/mux"
-	valid "github.com/asaskevich/govalidator"
-	"net/http"
+	"context"
 	"encoding/json"
-	"github.com/cad/vehicle-tracker-api/repository"
-)
+	"net/http"
 
+	valid "github.com/asaskevich/govalidator"
+	"github.com/cad/vehicle-tracker-api/repository"
+	"github.com/gorilla/mux"
+)
 
 // swagger:parameters User
 type UserParams struct {
@@ -17,9 +17,7 @@ type UserParams struct {
 	// in: body
 	// required: true
 	Data AuthorizationRequestPayload
-
 }
-
 
 // swagger:route GET /user/ Users GetAllUsers
 // Get all Users.
@@ -40,7 +38,6 @@ func GetAllUsers(w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
-
 // swagger:parameters GetUser
 type GetUserParams struct {
 
@@ -48,7 +45,6 @@ type GetUserParams struct {
 	// in: path
 	// required: true
 	UUID string `json:"uuid"`
-
 }
 
 // swagger:route GET /user/{uuid} Users GetUser
@@ -74,7 +70,6 @@ func GetUser(w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
-
 // swagger:parameters CreateNewUser
 type CreateNewUserParams struct {
 
@@ -93,7 +88,6 @@ type CreateNewUserParams struct {
 		// required: false
 		Password string `json:"password"`
 	}
-
 }
 
 // swagger:route POST /user/ Users CreateNewUser
@@ -125,7 +119,7 @@ func CreateNewUser(w http.ResponseWriter, req *http.Request) {
 		params.Data.Password,
 	)
 
-	if err != nil  {
+	if err != nil {
 		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -144,7 +138,6 @@ type DeleteUserParams struct {
 	// in: path
 	// required: true
 	UUID string `json:"uuid" validate:"required"`
-
 }
 
 // swagger:route DELETE /user/{uuid} Users DeleteUser
@@ -159,6 +152,15 @@ type DeleteUserParams struct {
 //     200: UserSuccessUserResponse
 func DeleteUser(w http.ResponseWriter, req *http.Request) {
 	params := DeleteUserParams{UUID: mux.Vars(req)["uuid"]}
+	if tokenOwner, ok := UUIDFromContext(req.Context()); ok {
+		if tokenOwner == params.UUID {
+			sendErrorMessage(w, "User can not delete themself.", http.StatusForbidden)
+			return
+		}
+	} else {
+		sendErrorMessage(w, "tokenOwner can not be determined.", http.StatusInternalServerError)
+		return
+	}
 
 	user, err := repository.DeleteUserByUUID(params.UUID)
 	if err != nil {
@@ -170,4 +172,21 @@ func DeleteUser(w http.ResponseWriter, req *http.Request) {
 	checkErr(w, err)
 	sendContentType(w, "application/json")
 	w.Write(j)
+}
+
+type userKey int
+
+const userUUIDKey userKey = 0
+
+// NewUUIDContext creates a new ctx with the given UUID.
+func NewUUIDContext(ctx context.Context, uuid string) context.Context {
+	return context.WithValue(ctx, userUUIDKey, uuid)
+}
+
+// UUIDFromContext extracts the user UUID from ctx, if present.
+func UUIDFromContext(ctx context.Context) (string, bool) {
+	// ctx.Value returns nil if ctx has no value for the key;
+	// the string type assertion returns ok=false for nil.
+	uuid, ok := ctx.Value(userUUIDKey).(string)
+	return uuid, ok
 }

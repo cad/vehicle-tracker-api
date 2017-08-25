@@ -137,9 +137,9 @@ func CreateVehicle(plateID string, agentUUID string, groupIDs []int, vehicleType
 	}
 	var a Agent
 	db.Where(&Agent{UUID: agentUUID}).First(&a)
-	if a == (Agent{}) {
-		return &VehicleError{What: "Agent", Type: "Not-Found", Arg: agentUUID}
-	}
+	// if a == (Agent{}) {
+	// 	return &VehicleError{What: "Agent", Type: "Not-Found", Arg: agentUUID}
+	// }
 	vehicle.Agent = a
 	vehicle.AgentID = a.ID
 	vehicle.Groups = make([]Group, 0)

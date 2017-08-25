@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const VERSION = "1.1.5"
+const VERSION = "1.1.6"
 
 type Configuration struct {
 	DB     DBParams     `json:"db`

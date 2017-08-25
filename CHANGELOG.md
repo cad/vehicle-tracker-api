@@ -1,12 +1,22 @@
 # Change Log
 
-## [v0.1.5](https://github.com/cad/vehicle-tracker-api/tree/v0.1.5) (2017-08-24)
-[Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.1.4...v0.1.5)
+## [v1.1.6](https://github.com/cad/vehicle-tracker-api/tree/v1.1.6) (2017-08-25)
+[Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.1.5...v1.1.6)
+
+**Implemented enhancements:**
+
+- Authenticated user credentials [\#15](https://github.com/cad/vehicle-tracker-api/issues/15)
+
+**Fixed bugs:**
+
+- Can't create vehicle [\#16](https://github.com/cad/vehicle-tracker-api/issues/16)
+
+## [v1.1.5](https://github.com/cad/vehicle-tracker-api/tree/v1.1.5) (2017-08-23)
+[Full Changelog](https://github.com/cad/vehicle-tracker-api/compare/v1.1.4...v1.1.5)
 
 **Implemented enhancements:**
 
 - write an endpoint for system defined vehicle types [\#17](https://github.com/cad/vehicle-tracker-api/issues/17)
-- Authenticated user credentials [\#15](https://github.com/cad/vehicle-tracker-api/issues/15)
 
 **Fixed bugs:**
 

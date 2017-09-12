@@ -21,7 +21,7 @@ type Vehicle struct {
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"updated_at"`
 	PlateID   string    `json:"plate_id"    gorm:"not null;unique_index"`
-	Agent     Agent     `json:"agent"       gorm:"not null;ForeignKey:AgentID"`
+	Agent     *Agent    `json:"agent"       gorm:"not null;ForeignKey:AgentID"`
 	AgentID   uint      `json:"-"`
 	Groups    []Group   `json:"groups"      gorm:"many2many:vehicle_group;"`
 	Type      string    `json:"type"`
@@ -95,10 +95,11 @@ func VehicleSetAgent(plateID, uUID string) error {
 	if err != nil {
 		return err
 	}
-	vehicle.Agent, err = GetAgentByUUID(uUID)
+	agent, err := GetAgentByUUID(uUID)
 	if err != nil {
 		return err
 	}
+	vehicle.Agent = &agent
 
 	db.Save(&vehicle)
 	return nil
@@ -135,13 +136,13 @@ func CreateVehicle(plateID string, agentUUID string, groupIDs []int, vehicleType
 		PlateID: plateID, // TODO(cad): sanitize `plateID`
 		Type:    vehicleType,
 	}
-	var a Agent
-	db.Where(&Agent{UUID: agentUUID}).First(&a)
-	if a == (Agent{}) {
-		return &VehicleError{What: "Agent", Type: "Not-Found", Arg: agentUUID}
+	if agentUUID != "" {
+		var a Agent
+		db.Where(&Agent{UUID: agentUUID}).First(&a)
+		vehicle.Agent = &a
+		//vehicle.AgentID = a.ID
 	}
-	vehicle.Agent = a
-	vehicle.AgentID = a.ID
+
 	vehicle.Groups = make([]Group, 0)
 	// Set groups if not empty
 	if len(groups) > 0 {

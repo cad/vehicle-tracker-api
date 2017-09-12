@@ -95,13 +95,12 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 	user, _ := repository.CreateNewUser("test@test.com", "1234")
 	token, _ := user.RenewToken()
 
-	agent, _ := repository.CreateNewAgent("string")
+	//agent, _ := repository.CreateNewAgent("string")
 	groupID, _ := repository.CreateNewGroup("string")
 	vehicle := Ident{
-		PlateID:   "test",
-		AgentUUID: agent.UUID,
-		Groups:    []int{int(groupID)},
-		Type:      "SCHOOL-BUS",
+		PlateID: "test",
+		Groups:  []int{int(groupID)},
+		Type:    "SCHOOL-BUS",
 	}
 	vehicleJSON, err := json.Marshal(&vehicle)
 	if err != nil {
@@ -115,6 +114,60 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 	res := httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	if res.Code != 200 {
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
+		return
+	}
+
+	agent, _ := repository.CreateNewAgent("string")
+
+	vehicle = Ident{
+		PlateID:   "test2",
+		AgentUUID: agent.UUID,
+		Groups:    []int{int(groupID)},
+		Type:      "SCHOOL-BUS",
+	}
+	vehicleJSON, err = json.Marshal(&vehicle)
+	if err != nil {
+		t.Error(errorMsg("Vehicle", "Marshallable", "NotMarshallable"))
+	}
+	body = bytes.NewBuffer(vehicleJSON)
+
+	// Execute
+	req, _ = http.NewRequest("POST", "/vehicle/", body)
+	// Authenticate
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	res = httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	if res.Code != 200 {
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
+		return
+	}
+
+	// Ensure vehicle creation without providing agent; but
+	// when an agent is already present in the system.
+	vehicle2 := Ident{
+		PlateID: "test22",
+		Type:    "SCHOOL-BUS",
+	}
+	vehicleJSON, err = json.Marshal(&vehicle2)
+	if err != nil {
+		t.Error(errorMsg("Vehicle2", "Marshallable", "NotMarshallable"))
+	}
+	body = bytes.NewBuffer(vehicleJSON)
+
+	// Execute
+	req, _ = http.NewRequest("POST", "/vehicle/", body)
+	// Authenticate
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	res = httptest.NewRecorder()
 	GetRouter().ServeHTTP(res, req)
 
 	// Test

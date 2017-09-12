@@ -150,6 +150,31 @@ func TestCreateNewVehicleEndpoint(t *testing.T) {
 		return
 	}
 
+	// Ensure vehicle creation without providing agent; but
+	// when an agent is already present in the system.
+	vehicle2 := Ident{
+		PlateID: "test22",
+		Type:    "SCHOOL-BUS",
+	}
+	vehicleJSON, err = json.Marshal(&vehicle2)
+	if err != nil {
+		t.Error(errorMsg("Vehicle2", "Marshallable", "NotMarshallable"))
+	}
+	body = bytes.NewBuffer(vehicleJSON)
+
+	// Execute
+	req, _ = http.NewRequest("POST", "/vehicle/", body)
+	// Authenticate
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	res = httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	if res.Code != 200 {
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
+		return
+	}
 }
 
 func TestGetVehicleEndpoint(t *testing.T) {

@@ -371,6 +371,59 @@ func TestSetVehicleAgentEndpoint(t *testing.T) {
 	}
 }
 
+// Test Unset Agent
+func TestUnsetVehicleAgentEndpoint(t *testing.T) {
+	// Init
+	repository.ConnectDB("sqlite3", "/tmp/test.db")
+	defer repository.CloseDB()
+	defer os.Remove("/tmp/test.db")
+
+	// Prepare
+	user, _ := repository.CreateNewUser("test@test.com", "1234")
+	token, _ := user.RenewToken()
+
+	agent, _ := repository.CreateNewAgent("string")
+	groupID, _ := repository.CreateNewGroup("string")
+	err := repository.CreateVehicle(
+		"test",
+		agent.UUID,
+		[]int{int(groupID)},
+		"SCHOOL-BUS",
+	)
+
+	if err != nil {
+		t.Fatalf("can not create vehicle: %v", err)
+	}
+
+	// Execute
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("/vehicle/%s/agent", "test"), nil)
+	// Authenticate
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	res := httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	if err != nil {
+		t.Fatalf("can not create vehicle: %v", err)
+	}
+
+	// Test
+	if res.Code != 200 {
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
+		return
+	}
+
+	vehicle, err := repository.GetVehicleByPlateID("test")
+	if err != nil {
+		t.Error(errorMsg("Vehicle", "ToBeAbleToGet", "CannotGet"))
+	}
+
+	if vehicle.Agent != nil {
+		fmt.Printf("%+v\n", vehicle.Agent)
+		t.Error(errorMsg("vehicle.Agent", "nil", "not-nil"))
+	}
+}
+
 // Test Filter
 func TestFilterVehicleEndpoint(t *testing.T) {
 	// Init

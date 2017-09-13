@@ -2,28 +2,38 @@ package repository
 
 import (
 	"fmt"
-//	"log"
+	//	"log"
 	"time"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"github.com/cad/vehicle-tracker-api/event"
 
+	"github.com/cad/vehicle-tracker-api/event"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
+
 const NEW_AGENT = "NEW-AGENT"
 
 type Agent struct {
-	ID        uint       `json:"-"    gorm:"primary_key"`
-	UUID      string     `json:"uuid" gorm:"not null;unique_index"`
-	CreatedAt time.Time  `json:"-"`
-	UpdatedAt time.Time  `json:"updated_at"`
+	ID        uint      `json:"-"    gorm:"primary_key"`
+	UUID      string    `json:"uuid" gorm:"not null;unique_index"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"updated_at"`
 
-	Label     string     `json:"label"`
+	Label string `json:"label"`
 
-	Lat       string    `json:"lat"`
-	Lon       string    `json:"lon"`
-	TS        string  `json:"gps_ts"`
+	Lat string `json:"lat"`
+	Lon string `json:"lon"`
+	TS  string `json:"gps_ts"`
 }
 
-func GetAllAgents () []Agent {
+func (a *Agent) Vehicle() *Vehicle {
+	for _, vehicle := range GetAllVehicles() {
+		if vehicle.AgentID == a.ID {
+			return &vehicle
+		}
+	}
+	return nil
+}
+
+func GetAllAgents() []Agent {
 	var agents []Agent
 
 	db.Find(&agents)
@@ -42,7 +52,7 @@ func GetAgentByUUID(uUID string) (Agent, error) {
 		return agent, AgentError{
 			What: "Agent",
 			Type: "Not-Found",
-			Arg: uUID,
+			Arg:  uUID,
 		}
 	}
 	return agent, nil
@@ -61,7 +71,7 @@ func CreateNewAgent(uUID string) (Agent, error) {
 		return agent, AgentError{
 			What: "Agent",
 			Type: "Can-Not-Create",
-			Arg: uUID,
+			Arg:  uUID,
 		}
 	}
 	return agent, nil
@@ -103,9 +113,8 @@ func SyncAgentByUUID(uUID string, lat string, lon string, ts string) error {
 type AgentError struct {
 	What string
 	Type string
-	Arg string
+	Arg  string
 }
-
 
 func (e AgentError) Error() string {
 	return fmt.Sprintf("%s: <%s> %s", e.Type, e.What, e.Arg)

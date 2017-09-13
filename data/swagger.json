@@ -541,6 +541,36 @@
             "$ref": "#/responses/ErrorMsg"
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Unset vehicle agent.",
+        "operationId": "VehicleUnsetAgent",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "PlateID",
+            "description": "PlateID is a unique identifier across the vehicles",
+            "name": "plate_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehicleResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
       }
     },
     "/ws/vehicle/filter": {

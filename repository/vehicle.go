@@ -21,7 +21,7 @@ type Vehicle struct {
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"updated_at"`
 	PlateID   string    `json:"plate_id"    gorm:"not null;unique_index"`
-	Agent     *Agent    `json:"agent"       gorm:"not null;ForeignKey:AgentID"`
+	Agent     *Agent    `json:"agent"       gorm:"ForeignKey:AgentID"`
 	AgentID   uint      `json:"-"`
 	Groups    []Group   `json:"groups"      gorm:"many2many:vehicle_group;"`
 	Type      string    `json:"type"`
@@ -99,7 +99,25 @@ func VehicleSetAgent(plateID, uUID string) error {
 	if err != nil {
 		return err
 	}
+	agentVehicle := agent.Vehicle()
+	if agentVehicle != nil {
+		agentVehicle.Agent = nil
+		db.Save(&agentVehicle)
+	}
 	vehicle.Agent = &agent
+
+	db.Save(&vehicle)
+	return nil
+}
+
+func VehicleUnsetAgent(plateID string) error {
+	vehicle, err := GetVehicleByPlateID(plateID)
+	if err != nil {
+		return err
+	}
+
+	vehicle.AgentID = 0
+	vehicle.Agent = nil
 
 	db.Save(&vehicle)
 	return nil

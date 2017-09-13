@@ -22,8 +22,21 @@
         "tags": [
           "Agents"
         ],
-        "summary": "List all agents.",
-        "operationId": "GetAllAgents",
+        "summary": "Filter vehicles.",
+        "operationId": "FilterAgents",
+        "parameters": [
+          {
+            "enum": [
+              "ASSIGNED",
+              "UNASSIGNED"
+            ],
+            "type": "string",
+            "x-go-name": "AgentState",
+            "description": "AgentState\n\nAgentState to be filtered.\n\"ASSIGNED\" or \"UNASSIGNED\"",
+            "name": "state",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "$ref": "#/responses/AgentSuccessAgentsResponse"

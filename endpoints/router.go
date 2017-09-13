@@ -39,7 +39,7 @@ func GetRouter() http.Handler {
 	router.HandleFunc("/auth/", use(Authorize, CORSMiddleware)).Methods("POST")
 
 	// Agents
-	router.HandleFunc("/agent/", use(GetAllAgents, CORSMiddleware)).Methods("GET")
+	router.HandleFunc("/agent/", use(FilterAgents, CORSMiddleware)).Methods("GET")
 	router.HandleFunc("/agent/{uuid}/sync", use(SyncAgent, CORSMiddleware)).Methods("POST")
 	router.HandleFunc("/agents/{uuid}/sync", use(SyncAgent, CORSMiddleware)).Methods("POST") // NOTE(cad): this line added for backwards compatibility
 

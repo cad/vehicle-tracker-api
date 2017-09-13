@@ -41,6 +41,30 @@ func GetAllAgents() []Agent {
 	return agents
 }
 
+func FilterAgents(agentState string) []Agent {
+	var agents []Agent
+	agents = make([]Agent, 0)
+
+	switch agentState {
+	case "ASSIGNED":
+		for _, agent := range GetAllAgents() {
+			if agent.Vehicle() != nil {
+				agents = append(agents, agent)
+			}
+		}
+	case "UNASSIGNED":
+		for _, agent := range GetAllAgents() {
+			if agent.Vehicle() == nil {
+				agents = append(agents, agent)
+			}
+		}
+	default:
+		agents = GetAllAgents()
+	}
+
+	return agents
+}
+
 func GetAgentByUUID(uUID string) (Agent, error) {
 	var agent Agent
 	if uUID == "" {

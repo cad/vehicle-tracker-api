@@ -2,38 +2,58 @@ package endpoints
 
 import (
 	"github.com/gorilla/mux"
-//	valid "github.com/asaskevich/govalidator"
-	"net/http"
+	//	valid "github.com/asaskevich/govalidator"
 	"encoding/json"
+	"net/http"
+
 	"github.com/cad/vehicle-tracker-api/repository"
-//	"log"
-//	"fmt"
+	//	"log"
+	//	"fmt"
 )
 
 type GPSData struct {
 	Lat string `json:"lat"`
 	Lon string `json:"lon"`
-	TS string  `json:"ts"`
+	TS  string `json:"ts"`
 }
 
-// swagger:route GET /agent/ Agents GetAllAgents
-// List all agents.
+// swagger:parameters FilterAgents
+type FilterAgentsParams struct {
+
+	// AgentState
+	//
+	// AgentState to be filtered.
+	// "ASSIGNED" or "UNASSIGNED"
+	//
+	//
+	// in: query
+	// required: false
+	// enum: ASSIGNED,UNASSIGNED
+	AgentState string `json:"state"`
+}
+
+// swagger:route GET /agent/ Agents FilterAgents
+// Filter vehicles.
 //
 //
 //   Responses:
 //     default: ErrorMsg
 //     200: AgentSuccessAgentsResponse
-func GetAllAgents(w http.ResponseWriter, req *http.Request) {
-	var agents []repository.Agent
-	agents = repository.GetAllAgents()
+func FilterAgents(w http.ResponseWriter, req *http.Request) {
+	var agents = []repository.Agent{}
+	var state string
+	if len(req.URL.Query()["state"]) > 0 {
+		state = req.URL.Query()["state"][0]
+	}
+	params := FilterAgentsParams{AgentState: state}
+
+	agents = repository.FilterAgents(params.AgentState)
 
 	j, err := json.Marshal(agents)
 	checkErr(w, err)
 	sendContentType(w, "application/json")
 	w.Write(j)
-
 }
-
 
 // swagger:parameters SyncAgent
 type SyncAgentParams struct {
@@ -47,9 +67,7 @@ type SyncAgentParams struct {
 	// in: body
 	// required: true
 	Data GPSData
-
 }
-
 
 // swagger:route POST /agent/{uuid}/sync Agents SyncAgent
 // Send GPS data from agent.

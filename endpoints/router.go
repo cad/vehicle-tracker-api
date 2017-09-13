@@ -39,7 +39,7 @@ func GetRouter() http.Handler {
 	router.HandleFunc("/auth/", use(Authorize, CORSMiddleware)).Methods("POST")
 
 	// Agents
-	router.HandleFunc("/agent/", use(GetAllAgents, CORSMiddleware)).Methods("GET")
+	router.HandleFunc("/agent/", use(FilterAgents, CORSMiddleware)).Methods("GET")
 	router.HandleFunc("/agent/{uuid}/sync", use(SyncAgent, CORSMiddleware)).Methods("POST")
 	router.HandleFunc("/agents/{uuid}/sync", use(SyncAgent, CORSMiddleware)).Methods("POST") // NOTE(cad): this line added for backwards compatibility
 
@@ -50,6 +50,7 @@ func GetRouter() http.Handler {
 	router.HandleFunc("/vehicle/group/", use(GetAllGroups, CORSMiddleware)).Methods("GET")
 	router.HandleFunc("/vehicle/group/", use(CreateNewGroup, TokenAuthMiddleware, CORSMiddleware)).Methods("POST")
 	router.HandleFunc("/vehicle/{plate_id}/agent", use(VehicleSetAgent, TokenAuthMiddleware, CORSMiddleware)).Methods("POST")
+	router.HandleFunc("/vehicle/{plate_id}/agent", use(VehicleUnsetAgent, TokenAuthMiddleware, CORSMiddleware)).Methods("DELETE")
 	router.HandleFunc("/vehicle/{plate_id}", use(GetVehicle, CORSMiddleware)).Methods("GET")
 	router.HandleFunc("/vehicle/{plate_id}", use(DeleteVehicle, TokenAuthMiddleware, CORSMiddleware)).Methods("DELETE")
 	router.HandleFunc("/vehicle/type/", use(GetAllTypes, CORSMiddleware)).Methods("GET")

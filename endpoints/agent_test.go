@@ -1,22 +1,21 @@
 package endpoints
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"os"
 	"net/http"
 	"net/http/httptest"
-	"encoding/json"
+	"os"
 	"testing"
-	"bytes"
+
 	"github.com/cad/vehicle-tracker-api/repository"
 )
-
 
 func errorMsg(what, shouldBe, was string) string {
 	//debug.PrintStack()
 	return fmt.Sprintf("expected %s \"%s\" but got \"%s\"", what, shouldBe, was)
 }
-
 
 func TestGetAllAgentsEndpoint(t *testing.T) {
 	// Init
@@ -46,6 +45,70 @@ func TestGetAllAgentsEndpoint(t *testing.T) {
 	}
 }
 
+func TestFilterAgentsEndpoint(t *testing.T) {
+	// Init
+	repository.ConnectDB("sqlite3", "/tmp/test.db")
+	defer repository.CloseDB()
+	defer os.Remove("/tmp/test.db")
+
+	// Prepare
+	_, _ = repository.CreateNewAgent("test")
+	_, _ = repository.CreateNewAgent("assigned")
+	_ = repository.CreateVehicle("testvehicle", "assigned", []int{}, "SCHOOL-BUS")
+
+	// Execute
+	req, _ := http.NewRequest("GET", "/agent/?state=ASSIGNED", nil)
+	res := httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	var agents []repository.Agent
+	err := json.Unmarshal([]byte(res.Body.String()), &agents)
+	if err != nil {
+		t.Error(errorMsg("Agents", "Unmarshallable", "NotUnmarshallable"))
+		return
+	}
+
+	if agents[0].UUID != "assigned" {
+		t.Error(errorMsg("UUID", "assigned", agents[0].UUID))
+		return
+	}
+
+	// Execute
+	req, _ = http.NewRequest("GET", "/agent/?state=UNASSIGNED", nil)
+	res = httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	err = json.Unmarshal([]byte(res.Body.String()), &agents)
+	if err != nil {
+		t.Error(errorMsg("Agents", "Unmarshallable", "NotUnmarshallable"))
+		return
+	}
+
+	if agents[0].UUID != "test" {
+		t.Error(errorMsg("UUID", "assigned", agents[0].UUID))
+		return
+	}
+
+	// Execute
+	req, _ = http.NewRequest("GET", "/agent/", nil)
+	res = httptest.NewRecorder()
+	GetRouter().ServeHTTP(res, req)
+
+	// Test
+	err = json.Unmarshal([]byte(res.Body.String()), &agents)
+	if err != nil {
+		t.Error(errorMsg("Agents", "Unmarshallable", "NotUnmarshallable"))
+		return
+	}
+
+	if count := len(agents); count != 2 {
+		t.Error(errorMsg("len(agents)", "2", fmt.Sprintf("%d", count)))
+		return
+	}
+
+}
 
 func TestSyncAgentEndpoint(t *testing.T) {
 	// Init
@@ -57,7 +120,7 @@ func TestSyncAgentEndpoint(t *testing.T) {
 	_, _ = repository.CreateNewAgent("test")
 
 	// Execute
-	params := GPSData{Lat: "40", Lon: "40", TS:"40"}
+	params := GPSData{Lat: "40", Lon: "40", TS: "40"}
 	params_json, err := json.Marshal(&params)
 	if err != nil {
 		t.Error(errorMsg("AgentStruct", "Marshallable", "UnMarshallable"))
@@ -69,7 +132,7 @@ func TestSyncAgentEndpoint(t *testing.T) {
 
 	// Test
 	if res.Code != 200 {
-		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d",res.Code)))
+		t.Error(errorMsg("StatusCode", "200", fmt.Sprintf("%d", res.Code)))
 		return
 	}
 

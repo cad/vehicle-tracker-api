@@ -391,6 +391,50 @@ func VehicleSetAgent(w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
+// swagger:parameters VehicleUnsetAgent
+type VehicleUnsetAgentParams struct {
+	// PlateID is a unique identifier across the vehicles
+	// in: path
+	// required: true
+	PlateID string `json:"plate_id"`
+}
+
+// swagger:route DELETE /vehicle/{plate_id}/agent Vehicles VehicleUnsetAgent
+// Unset vehicle agent.
+//
+//   Security:
+//       Bearer:
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleSuccessVehicleResponse
+func VehicleUnsetAgent(w http.ResponseWriter, req *http.Request) {
+	var params VehicleUnsetAgentParams
+
+	params.PlateID = mux.Vars(req)["plate_id"]
+	_, err := valid.ValidateStruct(params)
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = repository.VehicleUnsetAgent(params.PlateID)
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	j, err := json.Marshal(vehicle)
+	checkErr(w, err)
+	sendContentType(w, "application/json")
+	w.Write(j)
+}
+
 // swagger:parameters DeleteVehicle
 type DeleteVehicleParams struct {
 

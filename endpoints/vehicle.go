@@ -581,6 +581,65 @@ func DeleteGroup(w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
+// swagger:parameters SetVehicleGroups
+type SetVehicleGroupsParams struct {
+
+	// PlateID
+	// in: path
+	// required: true
+	PlateID string `json:"plate_id"`
+
+	// Groups
+	// in: body
+	// required: true
+	Ident struct {
+		Groups []int `json:"groups"`
+	}
+}
+
+// swagger:route PUT /vehicle/{plate_id}/groups Vehicles SetVehicleGroups
+// Set vehicle's groups.
+//
+//   Security:
+//       Bearer:
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleSuccessVehicleGroupsResponse
+func SetVehicleGroups(w http.ResponseWriter, req *http.Request) {
+	params := SetVehicleGroupsParams{PlateID: mux.Vars(req)["plate_id"]}
+
+	_, err := valid.ValidateStruct(params)
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	decoder := json.NewDecoder(req.Body)
+	if err := decoder.Decode(&params.Ident); err != nil {
+		sendErrorMessage(w, "Error decoding the input", http.StatusBadRequest)
+		return
+	}
+
+	err = repository.SetVehicleGroups(params.PlateID, params.Ident.Groups)
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	vehicle, err := repository.GetVehicleByPlateID(params.PlateID)
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	j, err := json.Marshal(vehicle.Groups)
+	checkErr(w, err)
+	sendContentType(w, "application/json")
+	w.Write(j)
+}
+
 // swagger:route GET /vehicle/type/ Vehicles GetAllTypes
 // Get possible vehicle types defined in the system.
 //

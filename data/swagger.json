@@ -618,6 +618,57 @@
         }
       }
     },
+    "/vehicle/{plate_id}/groups": {
+      "put": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Set vehicle's groups.",
+        "operationId": "SetVehicleGroups",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "PlateID",
+            "description": "PlateID",
+            "name": "plate_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Groups",
+            "name": "Ident",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "groups": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "x-go-name": "Groups"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehicleGroupsResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
     "/ws/vehicle/filter": {
       "get": {
         "description": "e.g. wss://api.vehicles.neu.edu.tr/ws/vehicle/filter?vehicle_type=SCHOOL-BUS\u0026vehicle_group_id=2",

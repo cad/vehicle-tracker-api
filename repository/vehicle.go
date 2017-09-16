@@ -198,6 +198,21 @@ func CreateNewGroup(name string) (uint, error) {
 	return group.ID, nil
 }
 
+func DeleteGroup(groupID uint) error {
+	var group Group
+
+	db.First(&group, groupID)
+	if db.NewRecord(&group) {
+		return &VehicleError{
+			What: "Group.ID",
+			Type: "Unknown-Error",
+			Arg:  fmt.Sprintf("%d", groupID),
+		}
+	}
+	db.Delete(&group)
+	return nil
+}
+
 func GetAllGroups() []Group {
 	var groups []Group
 

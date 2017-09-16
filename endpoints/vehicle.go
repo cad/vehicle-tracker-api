@@ -530,6 +530,57 @@ func CreateNewGroup(w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
+// swagger:parameters DeleteVehicleGroup
+type DeleteGroupParams struct {
+
+	// GroupID
+	// in: path
+	// required: true
+	ID string `json:"group_id"`
+}
+
+// swagger:route DELETE /vehicle/group/{group_id} Vehicles DeleteVehicleGroup
+// Delete a group definition.
+//
+//   Security:
+//       Bearer:
+//
+//
+//   Responses:
+//     default: ErrorMsg
+//     200: VehicleSuccessVehicleGroupResponse
+func DeleteGroup(w http.ResponseWriter, req *http.Request) {
+	params := DeleteGroupParams{ID: mux.Vars(req)["group_id"]}
+
+	_, err := valid.ValidateStruct(params)
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	groupID, err := strconv.Atoi(params.ID)
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	group, err := repository.GetGroupByID(uint(groupID))
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = repository.DeleteGroup(uint(groupID))
+	if err != nil {
+		sendErrorMessage(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	j, err := json.Marshal(group)
+	checkErr(w, err)
+	sendContentType(w, "application/json")
+	w.Write(j)
+}
+
 // swagger:route GET /vehicle/type/ Vehicles GetAllTypes
 // Get possible vehicle types defined in the system.
 //

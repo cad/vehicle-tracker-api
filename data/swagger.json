@@ -431,6 +431,38 @@
         }
       }
     },
+    "/vehicle/group/{group_id}": {
+      "delete": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Delete a group definition.",
+        "operationId": "DeleteVehicleGroup",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ID",
+            "description": "GroupID",
+            "name": "group_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehicleGroupResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
     "/vehicle/type/": {
       "get": {
         "tags": [

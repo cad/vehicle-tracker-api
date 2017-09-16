@@ -431,6 +431,38 @@
         }
       }
     },
+    "/vehicle/group/{group_id}": {
+      "delete": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Delete a group definition.",
+        "operationId": "DeleteVehicleGroup",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ID",
+            "description": "GroupID",
+            "name": "group_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehicleGroupResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
     "/vehicle/type/": {
       "get": {
         "tags": [
@@ -579,6 +611,57 @@
         "responses": {
           "200": {
             "$ref": "#/responses/VehicleSuccessVehicleResponse"
+          },
+          "default": {
+            "$ref": "#/responses/ErrorMsg"
+          }
+        }
+      }
+    },
+    "/vehicle/{plate_id}/groups": {
+      "put": {
+        "tags": [
+          "Vehicles"
+        ],
+        "summary": "Set vehicle's groups.",
+        "operationId": "SetVehicleGroups",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "PlateID",
+            "description": "PlateID",
+            "name": "plate_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Groups",
+            "name": "Ident",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "groups": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "x-go-name": "Groups"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/VehicleSuccessVehicleGroupsResponse"
           },
           "default": {
             "$ref": "#/responses/ErrorMsg"

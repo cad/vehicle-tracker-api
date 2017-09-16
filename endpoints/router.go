@@ -49,8 +49,11 @@ func GetRouter() http.Handler {
 	router.HandleFunc("/vehicle/", use(CreateNewVehicle, TokenAuthMiddleware, CORSMiddleware)).Methods("POST")
 	router.HandleFunc("/vehicle/group/", use(GetAllGroups, CORSMiddleware)).Methods("GET")
 	router.HandleFunc("/vehicle/group/", use(CreateNewGroup, TokenAuthMiddleware, CORSMiddleware)).Methods("POST")
+	router.HandleFunc("/vehicle/group/{group_id}", use(DeleteGroup, TokenAuthMiddleware, CORSMiddleware)).Methods("DELETE")
 	router.HandleFunc("/vehicle/{plate_id}/agent", use(VehicleSetAgent, TokenAuthMiddleware, CORSMiddleware)).Methods("POST")
 	router.HandleFunc("/vehicle/{plate_id}/agent", use(VehicleUnsetAgent, TokenAuthMiddleware, CORSMiddleware)).Methods("DELETE")
+	router.HandleFunc("/vehicle/{plate_id}/groups", use(SetVehicleGroups, TokenAuthMiddleware, CORSMiddleware)).Methods("PUT")
+
 	router.HandleFunc("/vehicle/{plate_id}", use(GetVehicle, CORSMiddleware)).Methods("GET")
 	router.HandleFunc("/vehicle/{plate_id}", use(DeleteVehicle, TokenAuthMiddleware, CORSMiddleware)).Methods("DELETE")
 	router.HandleFunc("/vehicle/type/", use(GetAllTypes, CORSMiddleware)).Methods("GET")

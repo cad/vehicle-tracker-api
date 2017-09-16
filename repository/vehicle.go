@@ -23,7 +23,7 @@ type Vehicle struct {
 	PlateID   string    `json:"plate_id"    gorm:"not null;unique_index"`
 	Agent     *Agent    `json:"agent"       gorm:"ForeignKey:AgentID"`
 	AgentID   uint      `json:"-"`
-	Groups    []Group   `json:"groups"      gorm:"many2many:vehicle_group;"`
+	Groups    []*Group  `json:"groups"      gorm:"many2many:vehicle_group;"`
 	Type      string    `json:"type"`
 }
 
@@ -123,11 +123,13 @@ func VehicleUnsetAgent(plateID string) error {
 	return nil
 }
 
-func CreateVehicle(plateID string, agentUUID string, groupIDs []int, vehicleType string) error {
-	if plateID == "" {
-		return &VehicleError{What: "plateID", Type: "Empty", Arg: plateID}
+func SetVehicleGroups(plateID string, groupIDs []int) error {
+	vehicle, err := GetVehicleByPlateID(plateID)
+	if err != nil {
+		return err
 	}
-	groups := make([]Group, 0)
+
+	groups := make([]*Group, 0)
 	// Sanitize incoming
 	for _, item := range groupIDs {
 		var group Group
@@ -135,7 +137,43 @@ func CreateVehicle(plateID string, agentUUID string, groupIDs []int, vehicleType
 		if group == (Group{}) {
 			return &VehicleError{What: "Group", Type: "Not-Found", Arg: strconv.Itoa(item)}
 		}
-		groups = append(groups, group)
+		groups = append(groups, &group)
+	}
+
+	// Set groups if not empty
+	if len(groups) > 0 {
+		db.Model(&vehicle).Association("Groups").Replace(groups)
+		if db.Error != nil {
+			return db.Error
+		}
+	} else {
+		db.Model(&vehicle).Association("Groups").Replace([]*Group{})
+		if db.Error != nil {
+			return db.Error
+		}
+	}
+
+	db.Save(&vehicle)
+	if db.Error != nil {
+		return db.Error
+	}
+
+	return nil
+}
+
+func CreateVehicle(plateID string, agentUUID string, groupIDs []int, vehicleType string) error {
+	if plateID == "" {
+		return &VehicleError{What: "plateID", Type: "Empty", Arg: plateID}
+	}
+	groups := make([]*Group, 0)
+	// Sanitize incoming
+	for _, item := range groupIDs {
+		var group Group
+		db.First(&group, item)
+		if group == (Group{}) {
+			return &VehicleError{What: "Group", Type: "Not-Found", Arg: strconv.Itoa(item)}
+		}
+		groups = append(groups, &group)
 	}
 
 	typeFound := false
@@ -161,10 +199,12 @@ func CreateVehicle(plateID string, agentUUID string, groupIDs []int, vehicleType
 		//vehicle.AgentID = a.ID
 	}
 
-	vehicle.Groups = make([]Group, 0)
+	vehicle.Groups = groups
 	// Set groups if not empty
 	if len(groups) > 0 {
 		vehicle.Groups = groups
+	} else {
+		vehicle.Groups = nil
 	}
 
 	db.Create(&vehicle) // TODO(cad): check here if vehicle
@@ -196,6 +236,21 @@ func CreateNewGroup(name string) (uint, error) {
 		}
 	}
 	return group.ID, nil
+}
+
+func DeleteGroup(groupID uint) error {
+	var group Group
+
+	db.First(&group, groupID)
+	if db.NewRecord(&group) {
+		return &VehicleError{
+			What: "Group.ID",
+			Type: "Unknown-Error",
+			Arg:  fmt.Sprintf("%d", groupID),
+		}
+	}
+	db.Delete(&group)
+	return nil
 }
 
 func GetAllGroups() []Group {

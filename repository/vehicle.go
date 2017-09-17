@@ -221,7 +221,7 @@ func DeleteVehicleByPlateID(plateID string) error {
 		return err
 	}
 
-	db.Delete(&vehicle)
+	db.Unscoped().Delete(&vehicle)
 	return nil
 }
 
@@ -249,7 +249,7 @@ func DeleteGroup(groupID uint) error {
 			Arg:  fmt.Sprintf("%d", groupID),
 		}
 	}
-	db.Delete(&group)
+	db.Unscoped().Delete(&group)
 	return nil
 }
 

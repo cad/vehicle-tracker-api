@@ -177,7 +177,7 @@ func DeleteUserByUUID(uUID string) (User, error) {
 		}
 	}
 
-	db.Delete(&user)
+	db.Unscoped().Delete(&user)
 	return user, nil
 }
 

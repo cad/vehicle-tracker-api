@@ -361,6 +361,17 @@
             "description": "VehicleGroup\n\nVehicleGroup id to be filtered.\ne.g: 3",
             "name": "vehicle_group_id",
             "in": "query"
+          },
+          {
+            "enum": [
+              "ASSIGNED",
+              "UNASSIGNED"
+            ],
+            "type": "string",
+            "x-go-name": "AgentState",
+            "description": "AgentState\n\nAgentState to be filtered.\n\"ASSIGNED\" or \"UNASSIGNED\"",
+            "name": "agent_state",
+            "in": "query"
           }
         ],
         "responses": {

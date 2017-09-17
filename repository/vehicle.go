@@ -73,16 +73,27 @@ func GetAllVehicles() []Vehicle {
 	return vehicles
 }
 
-func FilterVehicles(vehicleType string, groupID uint) []Vehicle {
+func FilterVehicles(vehicleType string, groupID uint, agentState string) []Vehicle {
 	var vehicles []Vehicle
 
-	q := db.Preload("Groups").Preload("Agent").Joins("JOIN vehicle_group ON vehicle_group.vehicle_id = vehicles.id")
+	q := db.Preload("Groups").Preload("Agent")
 	if groupID != *new(uint) {
+		q = q.Joins("JOIN vehicle_group ON vehicle_group.vehicle_id = vehicles.id")
 		q = q.Where("vehicle_group.group_id = ?", groupID)
 	}
 
 	if vehicleType != *new(string) {
 		q = q.Where("vehicles.type = ?", vehicleType)
+	}
+
+	if agentState != "" {
+		switch agentState {
+		case "ASSIGNED":
+			q = q.Where("vehicles.agent_id is not null")
+		case "UNASSIGNED":
+			q = q.Where("vehicles.agent_id is null")
+		default:
+		}
 	}
 
 	q.Find(&vehicles)
@@ -221,7 +232,7 @@ func DeleteVehicleByPlateID(plateID string) error {
 		return err
 	}
 
-	db.Delete(&vehicle)
+	db.Unscoped().Delete(&vehicle)
 	return nil
 }
 
@@ -249,7 +260,7 @@ func DeleteGroup(groupID uint) error {
 			Arg:  fmt.Sprintf("%d", groupID),
 		}
 	}
-	db.Delete(&group)
+	db.Unscoped().Delete(&group)
 	return nil
 }
 

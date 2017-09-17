@@ -119,6 +119,17 @@ type FilterVehiclesParams struct {
 	// in: query
 	// required: false
 	VehicleGroupID int `json:"vehicle_group_id"`
+
+	// AgentState
+	//
+	// AgentState to be filtered.
+	// "ASSIGNED" or "UNASSIGNED"
+	//
+	//
+	// in: query
+	// required: false
+	// enum: ASSIGNED,UNASSIGNED
+	AgentState string `json:"agent_state"`
 }
 
 // swagger:route GET /vehicle/filter Vehicles FilterVehicles
@@ -129,18 +140,25 @@ type FilterVehiclesParams struct {
 //     default: ErrorMsg
 //     200: VehicleSuccessVehiclesResponse
 func FilterVehicles(w http.ResponseWriter, req *http.Request) {
-	groupID, err := strconv.Atoi(req.URL.Query().Get("vehicle_group_id"))
-	if err != nil {
-		sendErrorMessage(w, "vehicle_group_id should be int", http.StatusBadRequest)
-		return
+	var groupID int
 
+	groupIDStr := req.URL.Query().Get("vehicle_group_id")
+	if groupIDStr != "" {
+		var err error
+		groupID, err = strconv.Atoi(groupIDStr)
+		if err != nil {
+			sendErrorMessage(w, "vehicle_group_id should be int", http.StatusBadRequest)
+			return
+		}
 	}
+
 	params := FilterVehiclesParams{
 		VehicleType:    req.URL.Query().Get("vehicle_type"),
 		VehicleGroupID: groupID,
+		AgentState:     req.URL.Query().Get("agent_state"),
 	}
 	var vehicles []repository.Vehicle
-	vehicles = repository.FilterVehicles(params.VehicleType, uint(params.VehicleGroupID))
+	vehicles = repository.FilterVehicles(params.VehicleType, uint(params.VehicleGroupID), params.AgentState)
 
 	j, err := json.Marshal(vehicles)
 	checkErr(w, err)
